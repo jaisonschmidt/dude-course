@@ -227,10 +227,9 @@ Endpoint de readiness da API e de suas dependências críticas.
 **Auth:** Não
 
 #### Response
-- **200 OK**
-#### Response
-- **201 Created**
-- **400 Validation Error**
+- **200 OK** — API e dependências prontas para receber tráfego
+- **503 Service Unavailable** — uma ou mais dependências críticas indisponíveis
+
 Endpoints e regras mínimas para o MVP:
 
 ## 🔁 Idempotência e Consistência
