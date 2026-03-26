@@ -15,33 +15,18 @@ Desenvolvido com **squad de 11 agentes de IA** especializados, usando GitHub Cop
 - **Containerização:** Docker + Docker Compose
 - **Auth:** JWT Bearer Token (bcrypt)
 
-## Como Usar Este Template
-
-### 1. Criar repositório a partir do template
-
-Use este repositório como template para criar um novo projeto.
-
-### 2. Configurar a stack do projeto (recomendado)
-
-Use o comando `/setup-project` no Copilot Chat para configurar interativamente a stack do projeto. O agente `project-setup` irá coletar informações e atualizar automaticamente toda a documentação.
-
-Alternativamente, preencha manualmente os placeholders `[PREENCHER]` nos docs.
-
-### 3. Preencher documentação de domínio
-
-Os docs abaixo estão com placeholders `[PREENCHER]` — preencha com os dados do seu projeto:
+### 3. Documentos do Projeto
 
 | Documento | O que preencher |
 |-----------|----------------|
+| [docs/product](docs/product) | Detalhes do produto como visão, requisitos funcionais, entre outros |
 | [docs/domain.md](docs/domain.md) | Entidades, regras de negócio, relacionamentos, fluxo principal |
 | [docs/database.md](docs/database.md) | Tabelas, campos, constraints, indexes, schema SQL |
 | [docs/api-spec.md](docs/api-spec.md) | Endpoints, request/response, autenticação, formato de erro |
 | [docs/local-setup.md](docs/local-setup.md) | Banco de dados, variáveis de ambiente, passos de setup |
 | [CONTEXT_PACK.md](CONTEXT_PACK.md) | Snapshot condensado do projeto para onboarding rápido de IA |
 
-### 3. Revisar documentação de engenharia
-
-Estes docs já estão preenchidos com padrões genéricos — revise e adapte se necessário:
+### 3. Documentação de engenharia
 
 | Documento | Conteúdo |
 |-----------|----------|
@@ -77,9 +62,7 @@ Crie ADRs para decisões do projeto (estilo arquitetural, linguagem, banco, fram
 
 Consulte `docs/engineer-guidelines.md` (seção ADRs) para o processo completo.
 
-### 6. Customizar instructions (opcional)
-
-Revise e customize conforme a stack do projeto:
+### 6. Instruções para uso de IA
 
 | Arquivo | Propósito |
 |---------|-----------|
