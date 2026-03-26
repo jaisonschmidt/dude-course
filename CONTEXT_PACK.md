@@ -81,18 +81,21 @@ docs/architecture.md
 
 # Core Domain Model
 
-<!-- [PREENCHER] Liste as entidades principais do projeto e seus relacionamentos. -->
-
 Main entities:
 
-[Entity1]
-[Entity2]
-[Entity3]
+User
+Course
+Lesson
+Enrollment
+LessonProgress
+Certificate
 
 Relationships:
 
-[Entity1] → [relação] → [Entity2]
-[Entity2] → [relação] → [Entity3]
+User → participates in → Course
+Course → contains → Lesson
+User → completes → Lesson
+User → earns → Certificate
 
 Reference:
 docs/domain.md
@@ -101,10 +104,11 @@ docs/domain.md
 
 # Business Logic
 
-<!-- [PREENCHER] Descreva as regras de negócio mais importantes. -->
-
-> Documente aqui as regras centrais do domínio (ex.: condições de completude,
-> unicidade, idempotência, etc.)
+- Only published courses are visible to learners
+- Course completion depends on all required lessons being completed
+- Progress is tracked per learner and per lesson
+- Duplicate lesson completion must not inflate course progress
+- Certificates can only be issued after course completion
 
 Reference:
 docs/domain.md
@@ -113,18 +117,32 @@ docs/domain.md
 
 # Database Overview
 
-<!-- [PREENCHER] Liste tabelas e constraints principais. -->
-
 Primary tables:
 
-[tabela1]
-[tabela2]
-[tabela3]
+users
+courses
+lessons
+enrollments
+lesson_progress
+certificates
 
 Important constraints:
 
-[tabela_x]:
-UNIQUE([campo1], [campo2])
+users:
+UNIQUE(email)
+
+lessons:
+UNIQUE(course_id, position)
+
+enrollments:
+UNIQUE(user_id, course_id)
+
+lesson_progress:
+UNIQUE(user_id, lesson_id)
+
+certificates:
+UNIQUE(certificate_code)
+UNIQUE(user_id, course_id)
 
 Reference:
 docs/database.md
