@@ -30,22 +30,120 @@ Para decisões de arquitetura consulte: `docs/architecture.md`
 
 <!-- Repita esta seção para cada tabela do sistema. -->
 
-### [nome_da_tabela]
+### users
 
-> **[PREENCHER]** Descreva cada tabela seguindo o modelo abaixo.
-
-**Descrição:** Breve descrição do propósito da tabela.
+**Descrição:** armazena contas de usuários da plataforma, incluindo learners e administradores.
 
 #### Campos
 
 - `id`: identificador interno
-- `[campo]`: descrição
+- `name`: nome do usuário
+- `email`: email único para autenticação
+- `password_hash`: hash seguro da senha
+- `role`: papel do usuário (`learner` ou `admin`)
 - `created_at`, `updated_at`
 
 #### Regras/Constraints
 
-- [Constraint 1, ex.: campo X **único**]
-- [Constraint 2, ex.: FK para tabela Y]
+- `email` **único**
+- `role` restrito aos valores aceitos pela aplicação
+
+### courses
+
+**Descrição:** armazena os cursos estruturados da plataforma.
+
+#### Campos
+
+- `id`: identificador interno
+- `title`: título do curso
+- `description`: descrição do curso
+- `thumbnail_url`: imagem de capa
+- `status`: estado de publicação (`draft`, `published`, `unpublished`)
+- `created_at`, `updated_at`
+
+#### Regras/Constraints
+
+- índice por `status` para listagens públicas
+- publicação depende de regras validadas na camada de serviço
+
+### lessons
+
+**Descrição:** armazena as aulas pertencentes a um curso.
+
+#### Campos
+
+- `id`: identificador interno
+- `course_id`: FK para `courses`
+- `title`: título da aula
+- `description`: descrição da aula
+- `youtube_url`: URL do vídeo no YouTube
+- `position`: ordem da aula no curso
+- `created_at`, `updated_at`
+
+#### Regras/Constraints
+
+- FK para `courses(id)`
+- unicidade composta em `course_id + position`
+- índice por `course_id`
+
+### enrollments
+
+**Descrição:** registra a participação de um usuário em um curso.
+
+#### Campos
+
+- `id`: identificador interno
+- `user_id`: FK para `users`
+- `course_id`: FK para `courses`
+- `started_at`: início do curso
+- `completed_at`: data de conclusão do curso
+- `created_at`, `updated_at`
+
+#### Regras/Constraints
+
+- FK para `users(id)`
+- FK para `courses(id)`
+- unicidade composta em `user_id + course_id`
+
+### lesson_progress
+
+**Descrição:** registra conclusão de aulas por usuário.
+
+#### Campos
+
+- `id`: identificador interno
+- `user_id`: FK para `users`
+- `course_id`: FK para `courses`
+- `lesson_id`: FK para `lessons`
+- `completed_at`: data da conclusão
+- `created_at`, `updated_at`
+
+#### Regras/Constraints
+
+- FK para `users(id)`
+- FK para `courses(id)`
+- FK para `lessons(id)`
+- unicidade composta em `user_id + lesson_id`
+
+### certificates
+
+**Descrição:** registra certificados emitidos para cursos concluídos.
+
+#### Campos
+
+- `id`: identificador interno
+- `user_id`: FK para `users`
+- `course_id`: FK para `courses`
+- `certificate_code`: código único de referência do certificado
+- `issued_at`: data de emissão
+- `created_at`, `updated_at`
+
+#### Regras/Constraints
+
+- FK para `users(id)`
+- FK para `courses(id)`
+- `certificate_code` **único**
+- unicidade composta em `user_id + course_id`
 
 ---
 
@@ -53,7 +151,10 @@ Para decisões de arquitetura consulte: `docs/architecture.md`
 
 <!-- Descreva cálculos, derivações ou regras que conectam domínio e banco. -->
 
-> **[PREENCHER]** Documente regras de negócio que impactam o schema (ex.: cálculos de completude, validações no Service Layer).
+- completude do curso é derivada da relação entre lessons obrigatórias do curso e registros em `lesson_progress`
+- publicação de curso depende de validações da camada de serviço; o banco garante estrutura e unicidade, mas não substitui todas as regras de publicação
+- emissão de certificado depende de conclusão de curso e deve respeitar unicidade por `user_id + course_id`
+- registros históricos de progresso e certificado não devem ser invalidados por exclusões destrutivas de cursos sem política explícita
 
 ---
 
@@ -61,15 +162,81 @@ Para decisões de arquitetura consulte: `docs/architecture.md`
 
 <!-- Cole o DDL de referência para migrations. -->
 
-> **[PREENCHER]** Adicione o schema SQL base do projeto.
-
 ```sql
--- [PREENCHER] Banco escolhido e configurações recomendadas
+CREATE TABLE users (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(120) NOT NULL,
+	email VARCHAR(255) NOT NULL UNIQUE,
+	password_hash VARCHAR(255) NOT NULL,
+	role VARCHAR(20) NOT NULL DEFAULT 'learner',
+	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
 
--- Exemplo:
--- CREATE TABLE [nome] (
---   id [TIPO_CHAVE_PRIMARIA],
---   ...
---   PRIMARY KEY (id)
--- );
+CREATE TABLE courses (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	title VARCHAR(180) NOT NULL,
+	description TEXT NOT NULL,
+	thumbnail_url VARCHAR(512) NULL,
+	status VARCHAR(20) NOT NULL DEFAULT 'draft',
+	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	INDEX idx_courses_status (status)
+);
+
+CREATE TABLE lessons (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	course_id INT NOT NULL,
+	title VARCHAR(180) NOT NULL,
+	description TEXT NULL,
+	youtube_url VARCHAR(512) NOT NULL,
+	position INT NOT NULL,
+	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT fk_lessons_course FOREIGN KEY (course_id) REFERENCES courses(id),
+	CONSTRAINT uq_lessons_course_position UNIQUE (course_id, position)
+);
+
+CREATE TABLE enrollments (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	user_id INT NOT NULL,
+	course_id INT NOT NULL,
+	started_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	completed_at TIMESTAMP NULL,
+	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT fk_enrollments_user FOREIGN KEY (user_id) REFERENCES users(id),
+	CONSTRAINT fk_enrollments_course FOREIGN KEY (course_id) REFERENCES courses(id),
+	CONSTRAINT uq_enrollments_user_course UNIQUE (user_id, course_id)
+);
+
+CREATE TABLE lesson_progress (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	user_id INT NOT NULL,
+	course_id INT NOT NULL,
+	lesson_id INT NOT NULL,
+	completed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT fk_progress_user FOREIGN KEY (user_id) REFERENCES users(id),
+	CONSTRAINT fk_progress_course FOREIGN KEY (course_id) REFERENCES courses(id),
+	CONSTRAINT fk_progress_lesson FOREIGN KEY (lesson_id) REFERENCES lessons(id),
+	CONSTRAINT uq_progress_user_lesson UNIQUE (user_id, lesson_id)
+);
+
+CREATE TABLE certificates (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	user_id INT NOT NULL,
+	course_id INT NOT NULL,
+	certificate_code VARCHAR(64) NOT NULL UNIQUE,
+	issued_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT fk_certificates_user FOREIGN KEY (user_id) REFERENCES users(id),
+	CONSTRAINT fk_certificates_course FOREIGN KEY (course_id) REFERENCES courses(id),
+	CONSTRAINT uq_certificates_user_course UNIQUE (user_id, course_id)
+);
 ```
+
+Observação:
+Este DDL é uma referência inicial para alinhar bootstrap e modelagem. A implementação efetiva no pacote `database/` deve usar Prisma como fonte de verdade e pode evoluir detalhes de tipos/constraints desde que permaneça compatível com estas regras documentadas.

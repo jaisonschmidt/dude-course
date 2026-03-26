@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  learner
+  admin
+}
+
+enum CourseStatus {
+  draft
+  published
+  unpublished
+}
+
+model User {
+  id             Int             @id @default(autoincrement())
+  name           String          @db.VarChar(120)
+  email          String          @unique @db.VarChar(255)
+  passwordHash   String          @map("password_hash") @db.VarChar(255)
+  role           UserRole        @default(learner)
+  enrollments    Enrollment[]
+  lessonProgress LessonProgress[]
+  certificates   Certificate[]
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Course {
+  id           Int            @id @default(autoincrement())
+  title        String         @db.VarChar(180)
+  description  String         @db.Text
+  thumbnailUrl String?        @map("thumbnail_url") @db.VarChar(512)
+  status       CourseStatus   @default(draft)
+  lessons      Lesson[]
+  enrollments  Enrollment[]
+  progress     LessonProgress[]
+  certificates Certificate[]
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  @@index([status], map: "idx_courses_status")
+  @@map("courses")
+}
+
+model Lesson {
+  id          Int              @id @default(autoincrement())
+  courseId    Int              @map("course_id")
+  title       String           @db.VarChar(180)
+  description String?          @db.Text
+  youtubeUrl  String           @map("youtube_url") @db.VarChar(512)
+  position    Int
+  course      Course           @relation(fields: [courseId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  progress    LessonProgress[]
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  @@unique([courseId, position], map: "uq_lessons_course_position")
+  @@index([courseId], map: "idx_lessons_course_id")
+  @@map("lessons")
+}
+
+model Enrollment {
+  id          Int       @id @default(autoincrement())
+  userId      Int       @map("user_id")
+  courseId    Int       @map("course_id")
+  startedAt   DateTime  @default(now()) @map("started_at")
+  completedAt DateTime? @map("completed_at")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@unique([userId, courseId], map: "uq_enrollments_user_course")
+  @@index([courseId], map: "idx_enrollments_course_id")
+  @@map("enrollments")
+}
+
+model LessonProgress {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  courseId    Int      @map("course_id")
+  lessonId    Int      @map("lesson_id")
+  completedAt DateTime @default(now()) @map("completed_at")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, lessonId], map: "uq_progress_user_lesson")
+  @@index([courseId], map: "idx_progress_course_id")
+  @@index([lessonId], map: "idx_progress_lesson_id")
+  @@map("lesson_progress")
+}
+
+model Certificate {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @map("user_id")
+  courseId        Int      @map("course_id")
+  certificateCode String   @unique @map("certificate_code") @db.VarChar(64)
+  issuedAt        DateTime @default(now()) @map("issued_at")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  course          Course   @relation(fields: [courseId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, courseId], map: "uq_certificates_user_course")
+  @@index([courseId], map: "idx_certificates_course_id")
+  @@map("certificates")
+}

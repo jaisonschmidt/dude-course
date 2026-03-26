@@ -27,9 +27,12 @@ Exemplo: `GET /api/v1/[recurso]`
 
 ### Autenticação
 
-> **[PREENCHER]** Defina o esquema de autenticação (ex.: JWT Bearer, API Key, OAuth2).
+Autenticação baseada em **JWT Bearer Token**.
 
 - Header: `Authorization: Bearer <token>`
+- Expiração do access token: `1h`
+- Hash de senha: `bcrypt`
+- Rotas protegidas devem responder `401 UNAUTHORIZED` quando o token estiver ausente, inválido ou expirado
 
 ### Paginação (quando aplicável)
 Parâmetros:
@@ -67,7 +70,7 @@ Códigos comuns:
 
 ## 🔐 Auth
 
-> **[PREENCHER]** Documente os endpoints de autenticação do seu projeto.
+Os endpoints de autenticação abaixo compõem a baseline funcional inicial do projeto.
 
 ### POST /auth/register
 
@@ -93,21 +96,51 @@ Códigos comuns:
 
 **Auth:** Não
 
+#### Request
+```json
+{
+  "email": "string",
+  "password": "string"
+}
+```
+
 #### Response
 - **200 OK** — Token de acesso retornado
 - **401 Unauthorized** — Credenciais inválidas
 
+Exemplo de resposta:
+
+```json
+{
+  "data": {
+    "accessToken": "jwt-token",
+    "expiresIn": "1h",
+    "user": {
+      "id": 1,
+      "name": "Jane Doe",
+      "email": "jane@example.com",
+      "role": "learner"
+    }
+  },
+  "requestId": "req_123"
+}
+```
+
+### POST /auth/logout
+
+**Auth:** Sim
+
+#### Response
+- **204 No Content** — Logout tratado no client removendo o token
+
 ---
+Os recursos abaixo representam a baseline de contrato esperada para o MVP. O bootstrap inicial não exige implementação completa imediata de todos eles, mas a estrutura do projeto deve ser preparada para suportá-los.
 
-## 📦 Recursos
+### GET /courses
 
-> **[PREENCHER]** Documente os endpoints de cada recurso do sistema seguindo o padrão abaixo.
+Lista cursos publicados para catálogo público.
 
-### GET /[recurso]
-
-> **[PREENCHER]** Descreva o endpoint.
-
-**Auth:** Sim/Não
+**Auth:** Não
 
 #### Query Params (opcional)
 - `page`, `pageSize`
@@ -115,13 +148,11 @@ Códigos comuns:
 #### Response
 - **200 OK**
 
----
+### GET /courses/{id}
 
-### GET /[recurso]/{id}
+Retorna o detalhe de um curso publicado e sua lista ordenada de lessons.
 
-> **[PREENCHER]** Descreva o endpoint.
-
-**Auth:** Sim/Não
+**Auth:** Não
 
 #### Path Params
 - `id` (number)
@@ -130,28 +161,89 @@ Códigos comuns:
 - **200 OK**
 - **404 Not Found**
 
----
+### POST /courses/{id}/enrollments
 
-### POST /[recurso]
+Inicia ou garante participação do learner autenticado em um curso publicado.
 
-> **[PREENCHER]** Descreva o endpoint.
+**Auth:** Sim
 
-**Auth:** Sim/Não
-
-#### Request
-```json
-{}
-```
+#### Path Params
+- `id` (number)
 
 #### Response
 - **201 Created**
-- **400 Validation Error**
+- **409 Conflict** — matrícula já existente quando a operação não for tratada de forma idempotente
 
----
+### POST /courses/{courseId}/lessons/{lessonId}/progress
+
+Marca uma lesson como concluída para o learner autenticado.
+
+**Auth:** Sim
+
+#### Path Params
+- `courseId` (number)
+- `lessonId` (number)
+
+#### Response
+- **200 OK**
+- **404 Not Found**
+- **409 Conflict** — inconsistência de estado quando aplicável
+
+### GET /me/dashboard
+
+Retorna visão resumida de cursos iniciados, concluídos e progresso do learner autenticado.
+
+**Auth:** Sim
+
+#### Response
+- **200 OK**
+
+### POST /courses/{id}/certificate
+
+Gera ou retorna o certificado do learner autenticado para um curso concluído.
+
+**Auth:** Sim
+
+#### Path Params
+- `id` (number)
+
+#### Response
+- **200 OK**
+- **403 Forbidden** — curso ainda não concluído
+
+### GET /health
+
+Endpoint de liveness da API.
+
+**Auth:** Não
+
+#### Response
+- **200 OK**
+
+### GET /ready
+
+Endpoint de readiness da API e de suas dependências críticas.
+
+**Auth:** Não
+
+#### Response
+- **200 OK**
+#### Response
+- **201 Created**
+- **400 Validation Error**
+Endpoints e regras mínimas para o MVP:
 
 ## 🔁 Idempotência e Consistência
 
-> **[PREENCHER]** Liste endpoints que devem ser idempotentes e regras de unicidade que o backend deve garantir.
+- `POST /courses/{id}/enrollments`
+  O backend deve garantir unicidade de participação por `userId + courseId`.
+- `POST /courses/{courseId}/lessons/{lessonId}/progress`
+  Marcação repetida da mesma lesson não pode inflar progresso. O backend deve garantir unicidade por `userId + lessonId`.
+- `POST /courses/{id}/certificate`
+  Não deve criar múltiplos certificados inconsistentes para o mesmo `userId + courseId`.
+
+Observação:
+Detalhes finos de payloads de resposta de cada recurso podem ser refinados durante a implementação funcional, desde que permaneçam compatíveis com estas regras e com o formato de erro/documentação já definida.
 
 ---
 

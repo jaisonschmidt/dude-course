@@ -99,6 +99,16 @@ Crie `frontend/.env.local`:
 NEXT_PUBLIC_API_BASE_URL=http://localhost:3001/api/v1
 ```
 
+Alternativamente, copie de `frontend/.env.example`.
+
+### Database
+
+Crie `database/.env` baseado em `database/.env.example`:
+
+```env
+DATABASE_URL=mysql://root:root@localhost:3306/dude_course
+```
+
 ---
 
 ## 🗄️ Prisma (migrations e schema)
@@ -107,14 +117,16 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:3001/api/v1
 cd database
 
 # Gerar Prisma Client
-pnpm prisma generate
+pnpm db:generate
 
 # Rodar migrations
-pnpm prisma migrate dev
+pnpm db:migrate:dev
 
 # Rodar seed (quando disponível)
-pnpm prisma db seed
+pnpm db:seed
 ```
+
+Observação: o scaffold inicial do monorepo cria a estrutura dos pacotes e arquivos-base. Os comandos específicos de Prisma passam a funcionar após a baseline do pacote `database` ser concluída.
 
 ---
 
@@ -153,8 +165,15 @@ Frontend disponível em `http://localhost:3000`.
 # Instalar tudo
 pnpm install
 
+# Subir MySQL local via Docker
+pnpm dev:db
+
 # Dev — backend + frontend juntos (se configurado no root package.json)
 pnpm dev
+
+# Subir backend ou frontend isoladamente
+pnpm dev:backend
+pnpm dev:frontend
 
 # Rodar testes unitários do backend
 pnpm --filter backend test
@@ -177,6 +196,25 @@ pnpm --filter frontend lint
 | Porta 3001 em uso | Alterar `PORT` no `backend/.env` |
 | Porta 3000 em uso | Parar outro processo Next.js ou alterar porta |
 | Migrations falham | Verificar se o banco `dude_course` existe e credenciais estão corretas |
-| Prisma Client desatualizado | Rodar `pnpm prisma generate` no pacote `database/` |
+| Prisma Client desatualizado | Rodar `pnpm db:generate` no pacote `database/` |
 | JWT inválido | Verificar `JWT_SECRET` no backend `.env` |
 | `pnpm install` falha | Verificar versão do pnpm e Node.js 24 |
+
+---
+
+## 📁 Arquivos base criados no bootstrap
+
+O setup inicial do projeto assume a existência destes arquivos raiz:
+
+- `package.json`
+- `pnpm-workspace.yaml`
+- `docker-compose.yml`
+- `.editorconfig`
+- `.gitignore`
+- `.nvmrc`
+
+Também são esperados arquivos de exemplo de ambiente em:
+
+- `backend/.env.example`
+- `frontend/.env.example`
+- `database/.env.example`

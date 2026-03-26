@@ -1,0 +1,21 @@
+{
+  "name": "dude-course",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.7.1",
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "scripts": {
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "dev:db": "docker compose up -d",
+    "dev:db:down": "docker compose down",
+    "dev": "pnpm -r --parallel --if-present dev",
+    "build": "pnpm -r --if-present build",
+    "test": "pnpm -r --if-present test",
+    "lint": "pnpm -r --if-present lint",
+    "format": "pnpm -r --if-present format"
+  }
+}
