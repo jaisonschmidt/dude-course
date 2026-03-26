@@ -42,6 +42,34 @@ export async function buildServer() {
     })
   })
 
+  app.get('/ready', async (request, reply) => {
+    const checks: Record<string, 'ok' | 'error'> = {}
+    let allReady = true
+
+    checks.api = 'ok'
+
+    // TODO: add database check here when Prisma is wired into the backend
+    // e.g.:
+    //   try { await prisma.$queryRaw`SELECT 1`; checks.db = 'ok' }
+    //   catch { checks.db = 'error'; allReady = false }
+
+    if (allReady) {
+      return reply.status(200).send({
+        data: { status: 'ready', checks },
+        requestId: request.id,
+      })
+    }
+
+    return reply.status(503).send({
+      error: {
+        code: 'SERVICE_UNAVAILABLE',
+        message: 'One or more dependencies are not ready',
+        details: checks,
+        requestId: request.id,
+      },
+    })
+  })
+
   await registerRoutes(app)
 
   return app
