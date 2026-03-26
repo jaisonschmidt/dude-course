@@ -1,19 +1,18 @@
 ---
-description: "Use when creating or modifying frontend pages, components, or hooks. Covers framework patterns, API integration, and UI state handling."
+description: "Use when creating or modifying frontend pages, components, or hooks. Covers Next.js App Router patterns, API integration, and UI state handling."
 applyTo: "frontend/**"
 ---
 
-# Frontend Development Guidelines
+# Frontend Development Guidelines (Next.js App Router)
 
-> Consult `CONTEXT_PACK.md` for the frontend framework and `docs/project-structure.md` for folder layout.
+> Consult `CONTEXT_PACK.md` for stack details and `docs/project-structure.md` for folder layout.
 
 ## Rendering strategy
 
-<!-- Adapt to the framework and rendering approach defined in your project -->
-
-- Follow the rendering strategy defined in `CONTEXT_PACK.md` and relevant ADRs
-- Use server-side rendering for dynamic, authenticated pages (when supported)
-- Use static generation for public, rarely-changing content (when supported)
+- **Hybrid rendering**: SSR for dynamic/authenticated pages, SSG for public/static content
+- Use React Server Components by default
+- Add `'use client'` only for components that need interactivity (hooks, event handlers)
+- Follow ADR-0003 for rendering decisions
 
 ## Project structure
 
@@ -24,8 +23,9 @@ Follow the frontend structure defined in `docs/project-structure.md`.
 - All API calls go through `services/` — never call endpoints directly from components
 - Match contracts exactly as defined in `docs/api-spec.md`
 - Base path: `/api/v1`
-- Handle auth token: attach to requests via appropriate mechanism, handle expiration
+- Handle JWT token: store in memory/httpOnly cookie, attach via `Authorization: Bearer <token>`, handle expiration
 - Handle error response format: `{ code, message, details, requestId }`
+- Use `fetch` or lightweight HTTP client (no heavy libraries like axios)
 
 ## UI state handling
 

@@ -11,60 +11,68 @@ directory is the **source of truth**.
 
 # Project Overview
 
-<!-- [PREENCHER] Preencha com nome, propósito e fluxo principal do projeto. -->
-
-Project: [Nome do Projeto]
+Project: Dude Course
 
 Purpose:
-[Descreva o propósito do sistema em 1-2 frases]
+Plataforma educacional que transforma conteúdo gratuito do YouTube em cursos estruturados com progresso rastreável e emissão de certificados.
 
 Core user flow:
 
-[Passo 1] → [Passo 2] → [Passo 3] → [Resultado]
+Registrar → Navegar catálogo → Iniciar curso → Assistir aulas (YouTube) → Marcar aulas como concluídas → Acompanhar progresso → Gerar certificado
 
 ---
 
 # Technology Stack
 
-<!-- [PREENCHER] Defina a stack do projeto. Use /setup-project para configurar automaticamente. -->
-
 Backend
-- [PREENCHER] Linguagem/runtime (ex.: Node.js, Python, Java, Go, .NET)
-- [PREENCHER] Estilo arquitetural (ex.: Clean Architecture, Hexagonal, Modular, MVC)
-- [PREENCHER] Tipo de API (ex.: REST, GraphQL, gRPC)
+- Node.js 24 + TypeScript
+- MVC architecture
+- REST API (Fastify)
+- Prisma ORM + MySQL 8.0
 
 Frontend
-- [PREENCHER] Framework (ex.: Next.js, Nuxt.js, SvelteKit, Angular, nenhum)
-- [PREENCHER] Estratégia de renderização (ex.: SSR, SSG, SPA, híbrido)
+- Next.js (App Router) + TypeScript
+- Hybrid rendering (SSR + SSG)
 
 Database
-- [PREENCHER] Banco de dados (ex.: PostgreSQL, MySQL, MongoDB, SQLite)
+- MySQL 8.0
 
 Monitoring
-- [PREENCHER] Ferramenta de APM/observabilidade (ex.: Datadog, New Relic, Grafana, CloudWatch)
+- New Relic (APM)
+- Pino (structured JSON logging)
 
 ---
 
 # Architectural Style
 
-<!-- [PREENCHER] Adapte conforme o estilo arquitetural adotado no projeto. -->
-
-Backend follows **[PREENCHER] estilo arquitetural** (ex.: Clean Architecture, Hexagonal, Modular, MVC).
+Backend follows **MVC (Model-View-Controller)** architecture.
 
 Layers:
 
-[PREENCHER] Liste as camadas conforme o estilo adotado.
+- **Models**: entidades de domínio e tipos (zero dependência de framework)
+- **Services**: lógica de negócio e orquestração
+- **Controllers**: handlers HTTP (parsam request, delegam para services, formatam response)
+- **Repositories**: acesso a dados via Prisma (implementam interfaces)
+- **Routes**: definições de rotas Fastify
+- **Middlewares**: auth JWT, requestId, error handling
+- **DTOs**: schemas Zod para validação e tipos request/response
 
 Dependency direction:
 
-[PREENCHER] Defina a direção de dependência entre camadas.
+Routes → Controllers → Services → Repositories → Models
 
 Rules:
 
-- Domain/business logic must not depend on frameworks or infrastructure
-- Controllers/handlers must not contain business logic
-- Database access must happen through abstractions (repositories/adapters)
-- Follow the layer boundaries defined in the architectural style
+- Models must not depend on frameworks or infrastructure
+- Controllers must not contain business logic
+- Database access must happen through repositories (Prisma)
+- Services depend on repository interfaces (abstractions)
+
+Monorepo structure (pnpm workspaces):
+- `backend/` — Fastify API + unit tests
+- `frontend/` — Next.js App Router
+- `database/` — Prisma schema, migrations, seeds
+- `integration-tests/` — testes de integração com DB real
 
 Reference:
 docs/architecture.md
@@ -131,11 +139,11 @@ Base path:
 
 Authentication:
 
-<!-- [PREENCHER] Defina o método de autenticação (ex.: JWT Bearer Token) -->
+JWT Bearer Token (1h expiration, bcrypt password hashing)
 
 Important endpoints:
 
-<!-- [PREENCHER] Liste os endpoints principais -->
+> Endpoints serão definidos em `docs/api-spec.md` durante a implementação do domínio.
 
 Reference:
 docs/api-spec.md
@@ -156,7 +164,7 @@ requestId
 
 Monitoring:
 
-[PREENCHER] Ferramenta de APM/observabilidade
+New Relic (APM) + Pino (structured JSON logging)
 
 Reference:
 docs/observability.md
@@ -206,8 +214,10 @@ Preferred workflow:
 
 # Key ADR Decisions
 
-> **[PREENCHER]** Registre aqui as ADRs do projeto conforme decisões forem tomadas.
-> Use `docs/adr/0000-adr-template.md` como base para criar novas ADRs.
+- ADR-0001: MVC Architecture (`docs/adr/0001-mvc-architecture.md`)
+- ADR-0002: MySQL 8.0 + Prisma (`docs/adr/0002-database-mysql.md`)
+- ADR-0003: Next.js Hybrid Rendering (`docs/adr/0003-frontend-nextjs.md`)
+- ADR-0004: JWT Bearer Token Auth (`docs/adr/0004-auth-jwt.md`)
 
 ---
 

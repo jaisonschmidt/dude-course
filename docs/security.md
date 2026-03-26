@@ -36,7 +36,7 @@ Referências:
 - Tokens inválidos/ausentes → **401 UNAUTHORIZED**.
 - Nunca logar token completo (no máximo prefixo + hash/truncado, se necessário).
 - Senhas nunca são armazenadas em texto puro:
-  - armazenar apenas `password_hash` (algoritmo seguro recomendado, ex.: bcrypt, argon2, scrypt).
+  - armazenar apenas `password_hash` usando **bcrypt** (mínimo 10 rounds).
 
 ### Expiração e rotação (baseline)
 - `expiresIn` no login (ex.: 1h).
@@ -147,7 +147,7 @@ PII (mínimo):
 
 ### Regras
 - Manter dependências atualizadas (patch/minor frequentes).
-- Ativar scanning de vulnerabilidades (ex.: GitHub Dependabot, Snyk, GHAS, ou equivalente).
+- Ativar scanning de vulnerabilidades quando necessário (ex.: GitHub Dependabot, Snyk).
 - Validar licenses quando necessário.
 
 ### Hardening do gerenciador de pacotes

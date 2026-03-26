@@ -62,10 +62,9 @@ ADRs registram decisões arquiteturais significativas do projeto. Cada ADR é um
 
 ### Linguagem e padrão
 
-<!-- [PREENCHER] Defina a stack do projeto. Use /setup-project para configurar. -->
-
-- Backend: [PREENCHER] (ex.: Node.js + TypeScript, Python, Java, Go)
-- Frontend: [PREENCHER] (ex.: Next.js, Nuxt.js, SvelteKit, Angular)
+- Backend: **Node.js 24 + TypeScript** (Fastify)
+- Frontend: **Next.js + TypeScript** (App Router, rendering híbrido)
+- Banco: **MySQL 8.0** via **Prisma ORM**
 - Preferir **código explícito** ao “mágico” (principalmente com IA).
 
 ### Nomes
@@ -77,7 +76,7 @@ ADRs registram decisões arquiteturais significativas do projeto. Cada ADR é um
 
 ### DTOs
 - Requests/responses HTTP devem usar **DTOs**, não entidades do domínio diretamente.
-- DTOs HTTP vivem em `interfaces/http/dto`.
+- DTOs HTTP vivem em `dto/` no pacote backend (com schemas Zod para validação).
 - Não “vazar” detalhes de infraestrutura (ex.: campos de banco) para DTOs públicos.
 
 ---
@@ -113,7 +112,7 @@ ADRs registram decisões arquiteturais significativas do projeto. Cada ADR é um
 
 ## 📦 Persistência
 
-- Migrations versionadas no diretório de migrations do projeto (conforme `docs/project-structure.md`).
+- Migrations gerenciadas pelo **Prisma Migrate** no pacote `database/` (conforme `docs/project-structure.md`).
 - Constraints do banco **devem refletir regras do domínio** quando possível.
 - Unicidade conforme definido em `docs/database.md`.
 
@@ -123,9 +122,7 @@ ADRs registram decisões arquiteturais significativas do projeto. Cada ADR é um
 
 ### APM / Monitoramento
 
-<!-- [PREENCHER] Defina a ferramenta de APM (ex.: Datadog, New Relic, Grafana, CloudWatch). -->
-
-- Instrumentar API e capturar erros não tratados.
+- **APM**: New Relic — instrumentar API Fastify e capturar erros não tratados.
 - Garantir correlação por `requestId` (ver padrão de erro no `docs/api-spec.md`).
 
 ### Logging

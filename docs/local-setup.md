@@ -1,8 +1,6 @@
 # 🛠️ Local Setup
 
-<!-- TEMPLATE: Preencha este documento com as instruções de setup do seu projeto. -->
-
-Este documento descreve como preparar e executar o projeto localmente (backend + frontend).
+Este documento descreve como preparar e executar o projeto **Dude Course** localmente.
 
 Referências:
 - Visão geral: `README.md`
@@ -16,15 +14,14 @@ Referências:
 
 ### Ferramentas
 
-<!-- [PREENCHER] Defina os pré-requisitos do projeto. Use /setup-project para configurar. -->
-
-- **[PREENCHER]** Runtime/linguagem (ex.: Node.js LTS, Python 3.x, Java 21, Go 1.22)
-- **[PREENCHER]** Gerenciador de pacotes (ex.: npm, pnpm, pip, maven, go modules)
-- **[PREENCHER]** Banco de dados (ex.: PostgreSQL, MySQL, MongoDB, SQLite)
-- Git
+- **Node.js 24** (LTS)
+- **pnpm** (gerenciador de pacotes — monorepo workspaces)
+- **MySQL 8.0** (local ou via Docker)
+- **Docker + Docker Compose** (recomendado para MySQL)
+- **Git**
 
 ### Opcional (recomendado)
-- Docker / Docker Compose (para subir dependências e facilitar setup)
+- **New Relic** agent para Node.js (APM em staging/prod)
 
 ---
 
@@ -32,30 +29,40 @@ Referências:
 
 ```bash
 git clone <repo-url>
-cd <repo-folder>
+cd dude-course
 ```
+
+---
+
+## 📦 Instalar dependências (raiz do monorepo)
+
+```bash
+pnpm install
+```
+
+Isso instala dependências de todos os pacotes: `backend/`, `frontend/`, `database/`, `integration-tests/`.
 
 ---
 
 ## 🗄️ Banco de dados
 
-> **[PREENCHER]** Instruções para configurar o banco de dados do projeto.
-
-### Opção A) Banco local instalado
-
-1. Inicie o banco de dados
-2. Crie o banco:
-
-```sql
-CREATE DATABASE [nome_do_banco];
-```
-
-### Opção B) Docker (recomendado)
-
-> **[PREENCHER]** Adicione ou referencie o `docker-compose.yml` do projeto.
+### Opção A) Docker (recomendado)
 
 ```bash
 docker compose up -d
+```
+
+O `docker-compose.yml` na raiz sobe:
+- MySQL 8.0 na porta **3306**
+- Banco `dude_course` criado automaticamente
+
+### Opção B) MySQL local instalado
+
+1. Inicie o MySQL
+2. Crie o banco:
+
+```sql
+CREATE DATABASE dude_course CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
 ---
@@ -64,36 +71,49 @@ docker compose up -d
 
 ### Backend
 
-Crie o arquivo de variáveis de ambiente do backend baseado em `.env.example`:
-
-> **[PREENCHER]** Liste as variáveis de ambiente necessárias.
+Crie `backend/.env` baseado em `backend/.env.example`:
 
 ```env
 # Server
-PORT=[PREENCHER]
-ENV=development
+PORT=3001
+NODE_ENV=development
 
-# Database
-DB_HOST=localhost
-DB_PORT=[PREENCHER]
-DB_NAME=[nome_do_banco]
-DB_USER=[PREENCHER]
-DB_PASSWORD=[PREENCHER]
+# Database (Prisma)
+DATABASE_URL="mysql://root:root@localhost:3306/dude_course"
 
 # Auth
-# [PREENCHER] Variáveis de autenticação (ex.: JWT_SECRET, API_KEY, etc.)
+JWT_SECRET=your-secret-key-change-in-production
+JWT_EXPIRES_IN=1h
 
-# Observability
-# [PREENCHER] Variáveis de observabilidade (ex.: APM_ENABLED, APM_LICENSE_KEY, etc.)
+# New Relic (opcional em dev)
+NEW_RELIC_ENABLED=false
+NEW_RELIC_APP_NAME=dude-course-api
+NEW_RELIC_LICENSE_KEY=
 ```
 
 ### Frontend
 
-Crie o arquivo de variáveis de ambiente do frontend:
+Crie `frontend/.env.local`:
 
 ```env
-# [PREENCHER] Variáveis do frontend
-API_BASE_URL=http://localhost:[PREENCHER]/api/v1
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3001/api/v1
+```
+
+---
+
+## 🗄️ Prisma (migrations e schema)
+
+```bash
+cd database
+
+# Gerar Prisma Client
+pnpm prisma generate
+
+# Rodar migrations
+pnpm prisma migrate dev
+
+# Rodar seed (quando disponível)
+pnpm prisma db seed
 ```
 
 ---
@@ -101,53 +121,51 @@ API_BASE_URL=http://localhost:[PREENCHER]/api/v1
 ## 🔧 Backend
 
 ```bash
-cd [diretório-do-backend]
-# [PREENCHER] Comando para instalar dependências (ex.: npm install, pip install -r requirements.txt)
+cd backend
+pnpm dev
 ```
 
-### Rodar migrations
-
-> A ferramenta de migration será definida na implementação.
-> O schema de referência está em `docs/database.md`.
-
-```bash
-# [PREENCHER] Comando de migration (ex.: npm run migrate, alembic upgrade head, flyway migrate)
-```
-
-### Rodar seeds (opcional)
-
-> **[PREENCHER]** Adicione instruções de seed quando disponíveis.
-
-```bash
-# [PREENCHER] Comando de seed
-```
-
-### Iniciar
-
-```bash
-# [PREENCHER] Comando para iniciar o backend (ex.: npm run dev, python manage.py runserver)
-```
-
-Backend disponível em `http://localhost:[PREENCHER]`.
+Backend disponível em `http://localhost:3001`.
 
 ---
 
 ## 🌐 Frontend
 
 ```bash
-cd [diretório-do-frontend]
-# [PREENCHER] Comando para instalar dependências
-# [PREENCHER] Comando para iniciar o frontend
+cd frontend
+pnpm dev
 ```
 
-Frontend disponível em `http://localhost:[PREENCHER]`.
+Frontend disponível em `http://localhost:3000`.
 
 ---
 
 ## ✅ Verificar
 
-- Backend: `http://localhost:[PREENCHER]/health`
-- Frontend: `http://localhost:[PREENCHER]`
+- Backend health: `http://localhost:3001/health`
+- Frontend: `http://localhost:3000`
+
+---
+
+## 📦 Scripts úteis (raiz do monorepo)
+
+```bash
+# Instalar tudo
+pnpm install
+
+# Dev — backend + frontend juntos (se configurado no root package.json)
+pnpm dev
+
+# Rodar testes unitários do backend
+pnpm --filter backend test
+
+# Rodar testes de integração
+pnpm --filter integration-tests test
+
+# Lint
+pnpm --filter backend lint
+pnpm --filter frontend lint
+```
 
 ---
 
@@ -155,30 +173,10 @@ Frontend disponível em `http://localhost:[PREENCHER]`.
 
 | Problema | Solução |
 |----------|---------|
-| Erro de conexão com banco | Verificar se o banco está rodando e as credenciais em `.env` |
-| Porta em uso | Alterar `PORT` no `.env` |
-| Migrations falham | Verificar se o banco foi criado e credenciais estão corretas |
-
-## 🧯 Troubleshooting
-
-### Porta em uso
-- Backend: ajuste `PORT` no arquivo de variáveis de ambiente
-- Frontend: ajuste a porta conforme o framework
-
-### Erro de conexão com DB
-Verifique:
-- Banco de dados rodando
-- Credenciais no arquivo de variáveis de ambiente
-- Porta do banco liberada
-
-### JWT inválido
-Verifique:
-- Secret de autenticação configurado no backend
-- token no header `Authorization`
-
----
-
-## 📌 Onde salvar
-
-Recomendado:
-- `docs/local-setup.md`
+| Erro de conexão com MySQL | Verificar se MySQL/Docker está rodando e `DATABASE_URL` no `.env` |
+| Porta 3001 em uso | Alterar `PORT` no `backend/.env` |
+| Porta 3000 em uso | Parar outro processo Next.js ou alterar porta |
+| Migrations falham | Verificar se o banco `dude_course` existe e credenciais estão corretas |
+| Prisma Client desatualizado | Rodar `pnpm prisma generate` no pacote `database/` |
+| JWT inválido | Verificar `JWT_SECRET` no backend `.env` |
+| `pnpm install` falha | Verificar versão do pnpm e Node.js 24 |

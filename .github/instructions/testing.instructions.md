@@ -1,46 +1,52 @@
 ---
-description: "Use when writing or modifying tests. Covers testing pyramid, AAA pattern, mocking strategy, and naming conventions."
-applyTo: "**/test/**"
+description: "Use when writing or modifying tests. Covers testing pyramid, AAA pattern, mocking strategy, Vitest conventions, and naming."
+applyTo: "**/test/**,**/integration-tests/**"
 ---
 
-# Testing Guidelines
+# Testing Guidelines (Vitest)
 
 ## Testing pyramid
 
 Priority order (most → least volume):
-1. **Unit tests** — domain entities, use cases (application layer)
-2. **Integration tests** — repositories, HTTP endpoints
-3. **E2E tests** — critical happy paths only
+1. **Unit tests** — services, models (`backend/test/unit/`)
+2. **Integration tests** — API routes, repositories with real DB (`integration-tests/test/`)
+3. **E2E tests** — critical happy paths only (future: Playwright)
 
 ## Unit tests
 
-- **Target**: Use cases, domain entities, value objects
-- **Mocking**: ALL ports (repositories, external services) must be mocked
+- **Target**: Services, models (business logic)
+- **Mocking**: ALL repositories and external dependencies must be mocked
 - **Pattern**: AAA (Arrange, Act, Assert)
-- **Location**: `test/unit/`
+- **Location**: `backend/test/unit/`
+- **Framework**: Vitest
 
-Example (adapt to your project's test framework and language):
+Example:
 
-```
-describe('CreateOrderUseCase')
-  it('should create an order when input is valid')
+```typescript
+import { describe, it, expect, vi } from 'vitest'
+
+describe('CourseService', () => {
+  it('should create a course when input is valid', async () => {
     // Arrange
-    mockRepo = create mock of repository with findById returning null, save as no-op
-    useCase = new CreateOrderUseCase(mockRepo)
+    const mockRepo = { create: vi.fn().mockResolvedValue({ id: 1, title: 'Test' }) }
+    const service = new CourseService(mockRepo)
 
     // Act
-    result = useCase.execute({ userId: 1, productId: 1 })
+    const result = await service.create({ title: 'Test', description: '...' })
 
     // Assert
-    result is defined
-    mockRepo.save was called once
+    expect(result).toBeDefined()
+    expect(mockRepo.create).toHaveBeenCalledOnce()
+  })
+})
 ```
 
 ## Integration tests
 
-- **Target**: Repository implementations, HTTP endpoints
+- **Target**: API routes, repository implementations
 - **Mocking**: External services only (NOT the database)
-- **Location**: `test/integration/`
+- **Location**: `integration-tests/test/`
+- **Database**: Real MySQL (test database, reset between tests)
 - **Verify**: HTTP status codes, response shapes, DB state, error formats with `requestId`
 
 ## Test naming
@@ -60,7 +66,8 @@ For every use case / endpoint:
 
 ## Mocking guidelines
 
-- Mock only ports (interfaces), never concrete implementations
+- Mock only repository interfaces, never concrete implementations
+- Use `vi.fn()` and `vi.mock()` from Vitest
 - Use factory functions for creating test fixtures
 - Never mock domain entities — use real ones with test data
-- Reset mocks between tests
+- Reset mocks between tests with `vi.clearAllMocks()` or `beforeEach`

@@ -1,45 +1,56 @@
 ---
-description: "Use when editing backend source code. Enforces architectural layer boundaries, dependency direction, and naming conventions as defined in docs/architecture.md."
+description: "Use when editing backend source code. Enforces MVC layer boundaries, dependency direction, and naming conventions as defined in docs/architecture.md."
 applyTo: "backend/src/**"
 ---
 
-# Backend Architecture Guidelines
+# Backend Architecture Guidelines (MVC)
 
-> These guidelines enforce architectural layer boundaries as defined in `docs/architecture.md`.
-> Adapt the rules below to match the architectural style adopted by the project.
+> These guidelines enforce MVC layer boundaries as defined in `docs/architecture.md`.
 
-## Architecture layers (dependency direction: outer → inner)
+## Architecture layers (dependency direction)
 
 ```
-Main → Interfaces → Application → Domain
-       Infrastructure ↗
+Routes → Controllers → Services → Repositories → Models
+              ↓            ↓
+         Middlewares      DTOs
 ```
 
-### Domain (`domain/`)
-- Pure business logic: entities, value objects, domain errors
+### Models (`models/`)
+- Domain entities, types, and interfaces
+- Pure business logic and invariants
 - ZERO framework or library imports
-- No imports from application, interfaces, or infrastructure
+- No imports from services, controllers, repositories, or infrastructure
 
-### Application (`application/`)
-- Use cases (commands/queries) and port interfaces
-- Depends only on Domain
-- Never imports from interfaces or infrastructure
-- External access only through ports (abstractions)
+### Services (`services/`)
+- Business logic and orchestration
+- Depends only on Models and repository interfaces (abstractions)
+- Never imports from controllers, routes, or middlewares
+- External data access only through repository interfaces
 
-### Interfaces (`interfaces/`)
-- HTTP controllers, route DTOs, routes, middlewares
-- Only HTTP concerns: parsing, validation, response formatting
+### Controllers (`controllers/`)
+- HTTP request handlers (Fastify)
+- Parse request, validate input (via Zod DTOs), delegate to services, format response
 - Never contains business logic
-- Calls use cases from application layer only
+- Returns responses in `{ data, requestId }` or error format
 
-### Infrastructure (`infrastructure/`)
-- Implements ports defined in application
-- Repository implementations, external service adapters, logging, DB connections
-- May use frameworks, libraries, and DB drivers
+### Repositories (`repositories/`)
+- Data access via Prisma Client (imported from `database` package)
+- Implement interfaces defined for service consumption
+- Encapsulate all database queries
+- No business logic, no HTTP concerns
 
-### Main (`main/`)
-- Composition root: dependency injection wiring only
-- No business logic, no HTTP handling
+### Routes (`routes/`)
+- Fastify route definitions: bind HTTP method + path to controller + middlewares
+- No business logic, no data transformation
+
+### Middlewares (`middlewares/`)
+- Cross-cutting concerns: JWT auth, requestId propagation, global error handling
+- Applied at route level
+
+### DTOs (`dto/`)
+- Zod schemas for request/response validation
+- Type definitions for API contracts
+- Separate from domain entities (Models)
 
 ## Naming conventions
 
@@ -47,11 +58,11 @@ Main → Interfaces → Application → Domain
 - **Classes**: `PascalCase`
 - **Functions/variables**: `camelCase`
 - **Constants**: `UPPER_SNAKE_CASE`
-- **Ports**: prefix with interface purpose (e.g., `OrderRepository`, `TokenProvider`)
+- **Repository interfaces**: descriptive name (e.g., `UserRepository`, `CourseRepository`)
 
 ## DTOs vs Domain entities
 
-- DTOs live in `interfaces/http/dto/` or `application/dto/`
-- Domain entities live in `domain/entities/`
+- DTOs live in `dto/` with Zod schemas
+- Domain entities live in `models/`
 - Never pass domain entities directly to/from HTTP layer
-- Map between DTOs and entities at the boundary
+- Map between DTOs and entities at the controller boundary

@@ -36,10 +36,13 @@ Se alguma informação estiver ausente, a IA deve **sugerir alteração na docum
 
 # 🧭 Sobre o sistema
 
-<!-- [PREENCHER] Descreva o sistema em termos de alto nível. -->
+**Dude Course** é uma plataforma educacional que transforma conteúdo gratuito do YouTube em cursos estruturados, com progresso rastreável e emissão de certificados.
 
-> Atualize esta seção com o propósito e fluxo principal do projeto.
-> Consulte `docs/domain.md` para o modelo de domínio e `CONTEXT_PACK.md` para o snapshot condensado.
+Fluxo principal: Registrar → Navegar catálogo → Iniciar curso → Assistir aulas (YouTube embed) → Marcar aulas como concluídas → Acompanhar progresso → Gerar certificado.
+
+Entidades principais: User, Course, Lesson, Enrollment, LessonProgress, Certificate.
+
+Consulte `docs/domain.md` para o modelo de domínio e `CONTEXT_PACK.md` para o snapshot condensado.
 
 ---
 
@@ -57,9 +60,14 @@ IA **deve respeitar o estilo e as regras de dependência definidos** nesse docum
 
 # 📊 Entidades do sistema
 
-<!-- [PREENCHER] Liste as entidades do domínio do projeto. -->
+Entidades do domínio (definidas em `docs/domain.md`):
 
-> Atualize com as entidades definidas em `docs/domain.md`.
+- **User** — usuário registrado (learner ou admin)
+- **Course** — curso curado com metadados e status de publicação
+- **Lesson** — aula vinculada a um curso, com referência a vídeo YouTube
+- **Enrollment** — matrícula de um usuário em um curso
+- **LessonProgress** — registro de conclusão de uma aula por um usuário
+- **Certificate** — certificado emitido após conclusão de todas as aulas
 
 IA **não deve criar novas entidades sem atualizar o domínio**.
 
@@ -67,9 +75,13 @@ IA **não deve criar novas entidades sem atualizar o domínio**.
 
 # 🗄 Banco de dados
 
-<!-- [PREENCHER] Informe o banco utilizado e as tabelas principais. -->
+- **MySQL 8.0** com **Prisma ORM**
+- Charset: `utf8mb4` / Collation: `utf8mb4_unicode_ci`
+- Chaves primárias: `INT AUTO_INCREMENT`
+- Auditoria: `created_at`, `updated_at`
+- Schema gerenciado via Prisma Migrate no pacote `database/`
 
-> Atualize com as informações de `docs/database.md`.
+> Tabelas e constraints específicas serão definidas em `docs/database.md` conforme o domínio for implementado.
 
 IA não deve:
 
@@ -81,15 +93,15 @@ IA não deve:
 
 # 🌐 API
 
-A API segue padrão REST.
+A API segue padrão REST via **Fastify**.
 
 Base path:
 
 /api/v1
 
-<!-- [PREENCHER] Liste os principais recursos da API. -->
+Autenticação: **JWT Bearer Token** (1h expiração, bcrypt password hashing).
 
-> Atualize com os recursos definidos em `docs/api-spec.md`.
+> Endpoints específicos serão definidos em `docs/api-spec.md` conforme features forem implementadas.
 
 IA deve gerar controllers e rotas **conformes ao API_SPEC**.
 
@@ -140,11 +152,11 @@ Ao implementar uma feature, a IA deve seguir a ordem:
 
 # 📌 Convenções
 
-<!-- [PREENCHER] Defina a stack do projeto. Use /setup-project para configurar. -->
-
-- linguagem backend: [PREENCHER] (ex.: Node.js, Python, Java, Go)
-- frontend: [PREENCHER] (ex.: Next.js, Nuxt.js, SvelteKit, Angular)
-- banco: [PREENCHER] (ex.: PostgreSQL, MySQL, MongoDB)
+- Linguagem backend: **Node.js 24 + TypeScript** (Fastify, MVC)
+- Frontend: **Next.js + TypeScript** (App Router, rendering híbrido)
+- Banco: **MySQL 8.0** (Prisma ORM)
+- Testes: **Vitest**
+- Monorepo: **pnpm workspaces** (backend, frontend, database, integration-tests)
 
 Preferir:
 

@@ -1,19 +1,19 @@
-# Copilot Agent Template
+# Dude Course
 
-Template para desenvolvimento de projetos com **squad de 11 agentes de IA** especializados, usando GitHub Copilot.
+Plataforma educacional que transforma conteúdo gratuito do YouTube em cursos estruturados, com progresso rastreável e emissão de certificados.
 
-Inclui: agentes configurados, slash commands, skills, instructions contextuais, documentação estruturada e fluxos automatizados (feature, bug fix, review, documentação).
+Desenvolvido com **squad de 11 agentes de IA** especializados, usando GitHub Copilot.
 
 ## Stack do Projeto
 
-<!-- [PREENCHER] Defina a stack do seu projeto aqui ou use o comando /setup-project para configurar automaticamente. -->
-
-- **Backend:** [PREENCHER] (ex.: Node.js, Python, Java, Go, .NET)
-- **Frontend:** [PREENCHER] (ex.: Next.js, Nuxt.js, SvelteKit, Angular)
-- **Banco:** [PREENCHER] (ex.: PostgreSQL, MySQL, MongoDB, SQLite)
-- **Observabilidade:** [PREENCHER] (ex.: Datadog, New Relic, Grafana, CloudWatch)
-
-> Use o agente `project-setup` (comando `/setup-project`) para configurar a stack e atualizar automaticamente todos os docs e instructions.
+- **Backend:** Node.js 24 + TypeScript (Fastify, MVC)
+- **Frontend:** Next.js + TypeScript (App Router, rendering híbrido)
+- **Banco:** MySQL 8.0 (Prisma ORM)
+- **Observabilidade:** New Relic (APM) + Pino (logging)
+- **Testes:** Vitest
+- **Monorepo:** pnpm workspaces (backend, frontend, database, integration-tests)
+- **Containerização:** Docker + Docker Compose
+- **Auth:** JWT Bearer Token (bcrypt)
 
 ## Como Usar Este Template
 

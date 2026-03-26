@@ -1,15 +1,15 @@
 ---
-description: "Use when creating or modifying API controllers, routes, or DTOs. Covers response format, input validation, error handling, and observability."
-applyTo: "**/controllers/**,**/routes/**"
+description: "Use when creating or modifying API controllers, routes, or DTOs. Covers Fastify response format, Zod input validation, error handling, and observability."
+applyTo: "**/controllers/**,**/routes/**,**/dto/**"
 ---
 
-# API Controller Guidelines
+# API Controller Guidelines (Fastify + Zod)
 
 ## Response format
 
 All endpoints must return responses following `docs/api-spec.md`:
 
-```
+```typescript
 // Success
 { data: T, requestId: string }
 
@@ -32,16 +32,16 @@ All endpoints must return responses following `docs/api-spec.md`:
 
 ## Input validation
 
-- Validate ALL inputs at the controller boundary
-- Use schema validators (Zod, Joi, or equivalent for your language/framework)
+- Validate ALL inputs at the controller boundary using **Zod** schemas
+- Zod schemas live in `dto/` folder
 - Return 400 with specific field errors
 - Never trust client-side validation
 
 ## Controller rules
 
-- **No business logic** — controllers only parse, validate, call use case, format response
-- Inject use cases via constructor/DI
-- Always propagate `requestId` from `X-Request-Id` header
+- **No business logic** — controllers only parse, validate, call service, format response
+- Inject services via constructor or Fastify decorators
+- Always propagate `requestId` from `X-Request-Id` header (via Fastify plugin)
 - Include `requestId` in every error response
 
 ## Error handling

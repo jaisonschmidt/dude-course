@@ -1,6 +1,6 @@
 # 🏗️ Architecture
 
-Este documento descreve as **decisões arquiteturais** do projeto.
+Este documento descreve as **decisões arquiteturais** do projeto **Dude Course**.
 
 Para visão geral consulte: `README.md`
 
@@ -10,178 +10,214 @@ Para regras do domínio consulte: `docs/domain.md`
 
 ## 🧭 Architectural Style
 
-<!-- [PREENCHER] Defina o estilo arquitetural do projeto e registre a decisão em uma ADR (docs/adr/). -->
-<!-- Exemplos de estilos: Clean Architecture, Hexagonal, Modular, MVC, CQRS. -->
-<!-- Adapte as seções abaixo conforme o estilo adotado. -->
+O projeto adota o estilo **MVC (Model-View-Controller)** adaptado para uma API REST com frontend separado.
 
-> **[PREENCHER]** Descreva aqui o estilo arquitetural adotado pelo projeto e a justificativa.
->
-> Registre a decisão formalmente em uma ADR: `docs/adr/NNNN-estilo-arquitetural.md`
+A decisão está registrada na ADR: `docs/adr/0001-mvc-architecture.md`
 
-### Camadas (defina conforme o estilo adotado)
+**Justificativa:** simplicidade, curva de aprendizado baixa, adequado para MVP, amplamente conhecido e suportado por ferramentas de IA.
 
-<!-- Exemplo para uma arquitetura em camadas (adapte ao estilo do projeto): -->
+### Camadas
 
-> **[PREENCHER]** Liste as camadas do projeto e suas responsabilidades.
->
-> Exemplo (Clean Architecture):
-> - **Domain**: entidades e regras de negócio puras (sem framework)
-> - **Application**: casos de uso (use cases) e portas (interfaces)
-> - **Interfaces**: adaptadores de entrada (HTTP controllers, DTOs, middlewares)
-> - **Infrastructure**: adaptadores de saída (DB/repositories, providers externos, logger)
-> - **Main**: composição/bootstrapping (DI, rotas, wiring)
->
-> Exemplo (MVC):
-> - **Models**: entidades e regras de negócio
-> - **Controllers**: lógica de coordenação e HTTP
-> - **Views/Routes**: apresentação e rotas
+- **Models** (`models/`): entidades de domínio e tipos. Regras de negócio puras, sem dependência de framework.
+- **Services** (`services/`): lógica de negócio e orquestração. Coordenam repositories e aplicam regras de domínio.
+- **Controllers** (`controllers/`): handlers HTTP. Recebem request, delegam para services, formatam response.
+- **Repositories** (`repositories/`): acesso a dados via Prisma. Abstraídos por interfaces para testabilidade.
+- **Routes** (`routes/`): definições de rotas Fastify, vinculam paths a controllers.
+- **Middlewares** (`middlewares/`): auth, requestId, validação, error handling.
+- **DTOs** (`dto/`): objetos de transferência de dados para request/response HTTP.
+- **Plugins** (`plugins/`): plugins Fastify (requestId, CORS, etc.).
+- **Config** (`config/`): configuração centralizada (env vars, constantes).
 
 ### Regras de dependência
 
-<!-- Defina a direção de dependência entre camadas. -->
+```
+Routes → Controllers → Services → Repositories → Models
+                ↓            ↓
+           Middlewares      DTOs
+```
 
-> **[PREENCHER]** Defina as regras de dependência entre camadas.
->
-> Exemplo para arquitetura em camadas com dependência para dentro:
-> ```
-> interfaces      ─┐
-> infrastructure  ─┼──> application ───> domain
-> main            ─┘
-> ```
+**Direção:** camadas externas (HTTP) dependem de camadas internas (negócio), nunca o contrário.
 
-**Princípios gerais (adapte ao estilo adotado):**
+**Princípios:**
 
-- Camadas internas **não devem** importar camadas externas
-- Controllers/handlers **não devem** conter regra de negócio
-- Acesso a banco **deve** ser feito através de abstrações (repositories/adapters)
-- A camada de composição (main/bootstrap) é a única que pode referenciar todas as outras
+- **Models** não importam nenhuma outra camada
+- **Services** dependem de Models e de interfaces de Repositories (abstrações)
+- **Controllers** dependem de Services e DTOs — **nunca** contêm regra de negócio
+- **Repositories** dependem de Models e do Prisma Client (importado do pacote `database`)
+- **Routes** apenas conectam controllers a paths — sem lógica
+- **Middlewares** são transversais: auth, error handling, requestId
 
 ---
 
 ## 🧩 Responsabilidades por camada
 
-<!-- [PREENCHER] Detalhe as responsabilidades de cada camada do projeto. -->
-<!-- Os exemplos abaixo são baseados em arquitetura em camadas — adapte ao estilo adotado. -->
-
-### Camada de Domínio / Modelos
-- Entidades de negócio
+### Models (`models/`)
+- Entidades de negócio (User, Course, Lesson, Enrollment, LessonProgress, Certificate)
+- Tipos e interfaces TypeScript
 - Regras invariantes do domínio
-- Value Objects (se aplicável)
 
-**Não deve conter:** SQL, HTTP, DTOs de API, dependências de framework
+**Não deve conter:** SQL, HTTP, DTOs de API, dependências de framework, imports de Prisma
 
-### Camada de Aplicação / Serviços
-- Casos de uso / lógica de orquestração
-- Portas/interfaces para dependências externas
-- Modelos de entrada/saída internos (não HTTP)
+### Services (`services/`)
+- Lógica de negócio e orquestração de operações
+- Validação de regras de domínio (ex.: "curso deve estar publicado para matrícula")
+- Coordenação de múltiplos repositories quando necessário
+- Dependem de interfaces de repositories (abstrações), não de implementações concretas
 
-> **[PREENCHER]** Liste os use cases do projeto. Exemplos:
-> - `RegisterUser`
-> - `Create[Entity]`
-> - `List[Entities]`
+**Não deve conter:** acesso direto ao request/response HTTP, formatação de resposta
 
-### Camada de Interfaces / Controllers
-- Rotas e controllers HTTP
-- DTOs de request/response (alinhados com `docs/api-spec.md`)
-- Middlewares (auth, requestId, error mapping)
+### Controllers (`controllers/`)
+- Recebem e parsam requests HTTP
+- Validam input via schemas (Zod)
+- Delegam para services
+- Formatam response no padrão `{ data, requestId }`
 
-**Regra**: transformar entrada HTTP → input do caso de uso e output → resposta HTTP (sem negócio).
+**Regra:** controller é um adaptador HTTP — transforma request em input do service e output em response.
 
-### Camada de Infraestrutura / Adapters
-- Implementações concretas de abstrações/ports
-- Conexão com DB e migrations
-- Integrações externas
-- Logger e instrumentação de APM
+### Repositories (`repositories/`)
+- Acesso a dados via Prisma Client
+- Implementam interfaces definidas em `models/` ou `services/`
+- Encapsulam queries e operações de banco
 
-### Camada de Composição / Bootstrap
-- Criação de instâncias concretas
-- Wiring de dependências (DI)
-- Definição de rotas e inicialização do server
+**Não deve conter:** regras de negócio, formatação HTTP
+
+### Routes (`routes/`)
+- Registram rotas no Fastify
+- Vinculam método HTTP + path a controller + middlewares
+- Sem lógica de negócio
+
+### Middlewares (`middlewares/`)
+- Autenticação JWT (validação de token, extração de user context)
+- Geração/propagação de `requestId`
+- Error handling global (mapear erros para respostas padronizadas)
+- Validação de schemas
+
+### DTOs (`dto/`)
+- Objetos de request/response HTTP (alinhados com `docs/api-spec.md`)
+- Schemas Zod para validação
+- Separados das entidades de domínio (Models)
 
 ---
 
 ## 📦 Estrutura recomendada do repositório
 
-### Backend
-
-<!-- [PREENCHER] Adapte a estrutura de pastas conforme o estilo arquitetural e a linguagem do projeto. -->
-<!-- O exemplo abaixo é baseado em arquitetura em camadas — adapte ao estilo adotado. -->
+O projeto é um **monorepo pnpm workspaces** com 4 pacotes:
 
 ```
-backend/
-  src/
-    [PREENCHER] Organize conforme o estilo arquitetural adotado.
+dude-course/
+  pnpm-workspace.yaml
+  package.json              # root — scripts globais e devDependencies compartilhadas
 
-    # Exemplo para arquitetura em camadas:
-    domain/               # entidades e regras de negócio
-      entities/
-      errors/
+  backend/                  # Pacote: API Fastify
+    package.json
+    src/
+      models/               # entidades de domínio e tipos
+      services/             # lógica de negócio
+      controllers/          # handlers HTTP
+      repositories/         # acesso a dados (Prisma)
+      routes/               # definições de rotas Fastify
+      middlewares/          # auth, requestId, error handling
+      dto/                  # schemas Zod e tipos de request/response
+      plugins/              # plugins Fastify
+      config/               # env vars, constantes
+      utils/                # logger (Pino), helpers
+      server.ts             # bootstrap do Fastify
+    test/
+      unit/                 # testes unitários (services, models)
 
-    application/          # casos de uso e abstrações
-      use-cases/
-      ports/
+  frontend/                 # Pacote: Next.js App Router
+    package.json
+    src/
+      app/                  # Next.js App Router (pages, layouts)
+      components/           # componentes React
+      hooks/                # custom hooks
+      services/             # API client
+      lib/                  # utilidades
+      styles/               # CSS / Tailwind
 
-    interfaces/           # adaptadores de entrada (HTTP)
-      http/
-        controllers/
-        routes/
-        middlewares/
-        dto/
-      mappers/
+  database/                 # Pacote: Prisma schema, migrations, seeds
+    package.json
+    prisma/
+      schema.prisma         # schema do banco
+      migrations/           # migrations geradas pelo Prisma
+    src/
+      client.ts             # Prisma Client singleton exportado
+      seed.ts               # seed script
 
-    infrastructure/       # adaptadores de saída (DB, serviços)
-      db/
-        connection/
-        migrations/
-      repositories/
-      logging/
-      providers/
-
-    main/                 # composição e bootstrap
-      server/
-      container/
+  integration-tests/        # Pacote: testes de integração
+    package.json
+    test/
+      api/                  # testes de rotas com DB real
+      repositories/         # testes de repositories
+    helpers/                # fixtures, setup, teardown
 ```
 
-### Frontend
-
-<!-- [PREENCHER] Adapte conforme o framework frontend do projeto. -->
+### Frontend (Next.js App Router)
 
 ```
-frontend/
-  [PREENCHER] Estrutura do framework frontend
+frontend/src/
+  app/
+    layout.tsx              # root layout
+    page.tsx                # homepage
+    (auth)/
+      login/page.tsx
+      register/page.tsx
+    courses/
+      page.tsx              # catálogo
+      [id]/page.tsx         # detalhe do curso
+    dashboard/
+      page.tsx              # dashboard do aluno
+    admin/
+      courses/
+        page.tsx            # gestão de cursos
   components/
-  services/              # client da API
+    ui/                     # componentes base (Button, Input, Card)
+    layout/                 # Header, Footer, Sidebar
+    course/                 # componentes de curso
   hooks/
+    use-auth.ts
+    use-api.ts
+  services/
+    api-client.ts           # wrapper HTTP com token
+    auth.ts                 # login, register, token management
+    courses.ts              # CRUD de cursos
   styles/
+    globals.css
 ```
 
 ---
 
 ## 🔐 Autenticação
 
-- Autenticação baseada em **JWT** (Bearer).
-- Rotas protegidas devem validar token via middleware.
+- Autenticação baseada em **JWT Bearer Token**.
+- Rotas protegidas devem validar token via middleware (`middlewares/auth.ts`).
+- Expiração: 1h (MVP, sem refresh token).
+- Hash de senha: **bcrypt**.
 - Contratos e exemplos: `docs/api-spec.md`.
+- Decisão registrada em: `docs/adr/0004-auth-jwt.md`.
 
 ---
 
 ## 📈 Observability
 
-<!-- [PREENCHER] Defina a ferramenta de APM do projeto (ex.: Datadog, New Relic, Grafana). -->
-
-- Instrumentar backend com ferramenta de APM (APM + erros).
+- **APM**: New Relic (instrumentação do backend Fastify).
+- **Logging**: Pino (integrado nativamente ao Fastify) com logs estruturados em JSON.
 - Padronizar `requestId` para correlação em logs e erros.
 - Erros devem ser mapeados para o padrão especificado em `docs/api-spec.md`.
+- Detalhes completos: `docs/observability.md`.
 
 ---
 
 ## 🔒 Segurança
 
 Obrigatório:
-- validação de input em endpoints
-- queries parametrizadas / ORM para evitar SQL injection
+- validação de input em controllers com schemas Zod
+- queries parametrizadas via Prisma (proteção contra SQL injection)
 - não logar tokens/senhas/dados sensíveis
-- controles de acesso para rotas autenticadas
+- controles de acesso via middleware de auth para rotas protegidas
+- proteção contra IDOR (verificar ownership de recursos)
+
+Detalhes completos: `docs/security.md`.
 
 ---
 
@@ -190,4 +226,6 @@ Obrigatório:
 Possíveis melhorias futuras (quando necessidade aparecer):
 - cache (Redis) para leituras intensas
 - processamento assíncrono (filas) para operações pesadas
-- containerização e escalabilidade horizontal
+- refresh tokens para sessões mais longas
+- RBAC granular para admin
+- rate limiting para endpoints de auth

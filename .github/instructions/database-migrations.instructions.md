@@ -1,25 +1,25 @@
 ---
-description: "Use when creating or modifying database migrations. Covers migration patterns, constraints, rollback safety, and schema conventions."
-applyTo: "**/migrations/**"
+description: "Use when creating or modifying Prisma schema or migrations. Covers Prisma Migrate patterns, constraints, rollback safety, and MySQL conventions."
+applyTo: "**/prisma/**,**/database/**"
 ---
 
-# Database Migration Guidelines
+# Database Migration Guidelines (Prisma + MySQL)
 
 ## Migration standards
 
-- Each migration file represents ONE atomic schema change
-- File naming: `YYYYMMDDHHMMSS-<description>.[ext]` (timestamp prefix)
-- Every migration MUST have both `up` and `down` methods (or equivalent)
-- `down` must fully reverse `up` — migrations must be rollback-safe
+- Migrations are managed by **Prisma Migrate** in the `database/` package
+- Schema changes go in `database/prisma/schema.prisma`
+- Generate migrations with `pnpm prisma migrate dev --name <description>`
+- Each migration should represent ONE atomic schema change
+- Prisma handles `up` automatically; manual SQL can be added in migration files
+- Always test migrations in development before staging/production
 
-## Schema conventions (per `docs/database.md`)
+## Schema conventions (MySQL 8.0 via Prisma)
 
-<!-- Adapt these conventions to the database engine defined in CONTEXT_PACK.md -->
-
-- **Primary keys**: use the recommended type for your database (e.g., `SERIAL`, `BIGINT AUTO_INCREMENT`, `UUID`)
-- **Audit fields**: `created_at` and `updated_at` with appropriate default values
-- **Soft deletes**: use `deleted_at` (nullable timestamp) when needed
-- **Charset/collation**: configure per database engine recommendations
+- **Primary keys**: `Int @id @default(autoincrement())`
+- **Audit fields**: `createdAt DateTime @default(now())` and `updatedAt DateTime @updatedAt`
+- **Soft deletes**: use `deletedAt DateTime?` when needed
+- **Charset/collation**: `utf8mb4` / `utf8mb4_unicode_ci` (set in datasource or connection URL)
 
 ## Constraints
 

@@ -5,25 +5,25 @@ applyTo: "backend/src/**"
 
 # Security Guidelines
 
-## Authentication (per `docs/security.md` and ADR-0002)
+## Authentication (per `docs/security.md` and ADR-0004)
 
-- JWT Bearer tokens for authentication
-- Token expiration: 1 hour (MVP, no refresh tokens)
+- JWT Bearer tokens for authentication (1h expiration, no refresh tokens in MVP)
+- Password hashing: **bcrypt** (minimum 10 rounds)
 - Always validate token signature and expiration
 - Extract user context from token for authorization
 
 ## Input validation
 
-- Validate ALL inputs at the controller boundary (interfaces layer)
-- Use schema validators (Zod, Joi, or equivalent)
+- Validate ALL inputs at the controller boundary using **Zod** schemas
+- Zod schemas live in `dto/` folder
 - Reject invalid input with 400 and specific field errors
 - Never trust client-side validation
 
 ## SQL injection prevention
 
-- Always use parameterized queries or ORM methods
-- NEVER concatenate user input into SQL strings
-- Use the repository pattern — all DB access through infrastructure layer
+- Always use **Prisma ORM** for database queries (parameterized by default)
+- NEVER concatenate user input into raw SQL strings
+- Use the repository pattern — all DB access through `repositories/` layer
 
 ## Sensitive data rules
 

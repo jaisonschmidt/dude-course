@@ -13,12 +13,16 @@ Para decisões de arquitetura consulte: `docs/architecture.md`
 
 ## ✅ Princípios
 
-- **[PREENCHER]** Banco de dados escolhido (ex.: PostgreSQL 16, MySQL 8, MongoDB 7, SQLite, etc.)
-- **FKs e constraints** habilitadas (para bancos relacionais).
-- **Chaves artificiais** para entidades principais (ex.: `BIGINT`, `UUID`, `SERIAL` — conforme convenção do banco).
-- **Auditoria mínima** com `created_at` / `updated_at`.
+- **MySQL 8.0** como banco de dados relacional.
+- **Prisma ORM** para acesso a dados, migrations e schema management.
+- **FKs e constraints** habilitadas para integridade referencial.
+- **Chaves primárias**: `INT AUTO_INCREMENT` para entidades principais.
+- **Auditoria mínima** com `created_at` (`DEFAULT CURRENT_TIMESTAMP`) e `updated_at` (`ON UPDATE CURRENT_TIMESTAMP`).
 - **Unicidade** garantida por índices únicos conforme domínio.
-- **Integridade referencial** com FKs e regras de `ON DELETE`/`ON UPDATE` (quando aplicável).
+- **Integridade referencial** com FKs e regras de `ON DELETE`/`ON UPDATE`.
+- **Charset**: `utf8mb4` com collation `utf8mb4_unicode_ci` (suporte completo a Unicode).
+- **Engine**: InnoDB (padrão MySQL 8.0, suporta transações e FKs).
+- Decisão registrada em: `docs/adr/0002-database-mysql.md`.
 
 ---
 

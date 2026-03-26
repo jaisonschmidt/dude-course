@@ -60,7 +60,7 @@ Todo log deve tentar conter:
   "requestId": "req_...",
   "http": {
     "method": "GET",
-    "path": "/api/v1/[recurso]",
+    "path": "/api/v1/courses",
     "status": 200,
     "durationMs": 34
   },
@@ -83,7 +83,11 @@ Todo log deve tentar conter:
 - **Erros** (sempre)
   - requestId + code + stack (com cuidado em prod)
 - **Eventos de domínio relevantes** (info)
-  > **[PREENCHER]** Liste eventos de domínio que devem ser logados (sem PII)
+  - Matrícula em curso (`enrollment.created`)
+  - Progresso de aula marcado (`lesson-progress.completed`)
+  - Curso completado (`enrollment.completed`)
+  - Certificado gerado (`certificate.issued`)
+  - Curso publicado/despublicado (`course.published`, `course.unpublished`)
 
 ### Onde logar
 - Backend: stdout/stderr (para agregação posterior)
@@ -127,7 +131,7 @@ Resposta exemplo:
 ```json
 {
   "status": "ok",
-  "service": "[nome-do-projeto]-api",
+  "service": "dude-course-api",
   "version": "git_sha_or_semver",
   "uptimeSeconds": 12345
 }
@@ -156,10 +160,11 @@ Para readiness, incluir dependências:
 
 ### Métricas de domínio (custom)
 
-> **[PREENCHER]** Defina métricas de negócio específicas do projeto. Exemplos:
-> - Operações concluídas por dia
-> - Taxa de conversão
-> - Itens processados por hora
+- Registros de usuários por dia
+- Matrículas em cursos por dia
+- Taxa de conclusão de cursos (completados / matriculados)
+- Certificados emitidos por dia
+- Aulas marcadas como concluídas por dia
 
 **Observação:** evitar métricas que exponham PII.
 
@@ -167,7 +172,9 @@ Para readiness, incluir dependências:
 
 ## 🧩 Tracing (APM)
 
-<!-- [PREENCHER] Defina a ferramenta de APM do projeto (ex.: Datadog, New Relic, Grafana, OpenTelemetry). -->
+Ferramenta de APM: **New Relic**
+
+Biblioteca de logging: **Pino** (integrado nativamente ao Fastify)
 
 ### Requisitos
 - Instrumentação APM habilitada no backend.
@@ -175,13 +182,15 @@ Para readiness, incluir dependências:
   - `requestId`
   - `userId` (quando autenticado)
   - IDs de recursos (somente quando relevante)
-- Nomear transações por rota (ex.: `GET /api/v1/[recurso]/{id}`)
+- Nomear transações por rota (ex.: `GET /api/v1/courses/{id}`)
 
 ### Eventos importantes para trace
 - Login (sucesso/falha) — com cuidado para não logar credenciais
 - Operações de escrita relevantes
 
-> **[PREENCHER]** Liste eventos de domínio relevantes para tracing.
+- Matrícula em curso
+- Conclusão de curso e emissão de certificado
+- Operações administrativas (criação/edição/publicação de cursos)
 
 ---
 
@@ -200,14 +209,24 @@ Configurar alertas básicos em staging/prod:
 
 ## 🧰 Troubleshooting rápido
 
-> **[PREENCHER]** Adicione cenários de troubleshooting específicos do projeto. Modelo:
-
-### Cenário: [descrição do problema]
+### Cenário: Matrícula falha com 409 Conflict
 Verificar:
-1. Endpoint relevante e resposta
-2. Logs com `requestId`
-3. Constraints do banco
-4. Trace na ferramenta de APM
+1. Logs com `requestId` para identificar erro de duplicata
+2. Constraint UNIQUE em `enrollments(user_id, course_id)` no banco
+3. Se o curso está publicado (status = 'published')
+
+### Cenário: Certificado não é gerado após conclusão
+Verificar:
+1. Progresso de todas as aulas do curso — devem estar marcadas como concluídas
+2. Status de conclusão do enrollment na tabela `enrollments`
+3. Logs de `enrollment.completed` e `certificate.issued`
+4. Trace no New Relic para a transação
+
+### Cenário: Latência alta em listagem de cursos
+Verificar:
+1. Query no Prisma — verificar se há N+1 queries
+2. Índices nas colunas de filtro/ordenação
+3. Trace no New Relic para identificar gargalo
 
 ---
 
