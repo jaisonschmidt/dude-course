@@ -24,6 +24,8 @@ Para decisões de arquitetura consulte: `docs/architecture.md`
 - **Engine**: InnoDB (padrão MySQL 8.0, suporta transações e FKs).
 - Decisão registrada em: `docs/adr/0002-database-mysql.md`.
 
+> **Nota charset (Docker):** Para garantir `utf8mb4` no ambiente local via Docker, o `docker-compose.yml` inicia o MySQL com `--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci`. Sem essa configuração explícita, o servidor pode subir com `latin1` dependendo da imagem, corrompendo dados Unicode silenciosamente.
+
 ---
 
 ## 🧱 Tabelas
@@ -240,3 +242,67 @@ CREATE TABLE certificates (
 
 Observação:
 Este DDL é uma referência inicial para alinhar bootstrap e modelagem. A implementação efetiva no pacote `database/` deve usar Prisma como fonte de verdade e pode evoluir detalhes de tipos/constraints desde que permaneça compatível com estas regras documentadas.
+
+---
+
+## 🔄 Ciclo de vida de migrations
+
+**Regra central:** migrations são **criadas** pelo desenvolvedor em desenvolvimento local e **versionadas no Git**. Todos os outros ambientes (CI, HML, produção) apenas as aplicam — nunca as criam.
+
+### Comandos Prisma
+
+| Comando | Quando usar | O que faz |
+|---|---|---|
+| `prisma migrate dev` | **Somente desenvolvimento local** | Detecta divergências, cria novo arquivo de migration, pode resetar o banco |
+| `prisma migrate deploy` | CI, HML e Produção | Aplica apenas migrations pendentes já existentes; determinístico, sem prompts, sem reset |
+
+> ⚠️ **Nunca executar `migrate dev` em staging ou produção** — pode resetar dados irreversivelmente.
+
+### Versioning
+
+O diretório `database/prisma/migrations/` é **artefato versionado no Git** — não deve ser ignorado nem gerado em runtime. É a fonte de verdade para todos os ambientes.
+
+Se o CI detectar drift entre o schema e as migrations, o pipeline falha imediatamente — isso é intencional e garante consistência.
+
+### Fluxo completo
+
+```
+Dev revisa schema.prisma vs docs/database.md
+        │
+        ▼
+Dev cria migration (prisma migrate dev)
+        │
+        ▼
+  git push → PR aberto
+        │
+        ▼
+  CI: prisma migrate deploy (banco efêmero) + testes
+        │
+        ▼
+  Merge na main
+        │
+        ▼
+  Deploy HML: prisma migrate deploy → banco hml atualizado → app sobe
+        │
+        ▼
+  Aprovação manual (protection rule de prod)
+        │
+        ▼
+  Deploy PROD: prisma migrate deploy → banco prod atualizado → app sobe
+```
+
+---
+
+## 🌍 Ambientes e nomes de banco
+
+| Ambiente | Nome do banco | Comando Prisma | Origem da `DATABASE_URL` |
+|---|---|---|---|
+| Dev local | `dude_course` | `migrate dev` | `database/.env` (gitignored) |
+| Testes (local e CI) | `dude_course_test` | `migrate deploy` | `integration-tests/.env` / CI secret |
+| HML | `dude_course_staging` | `migrate deploy` | GitHub Environment secret `hml` |
+| Produção | `dude_course_prod` | `migrate deploy` | GitHub Environment secret `prod` |
+
+**Notas importantes:**
+- O banco de testes é sempre **isolado por nome** — nunca compartilha instância com dev
+- Nos ambientes remotos (HML e prod) não existe arquivo `.env`; as variáveis são injetadas pela plataforma via GitHub Environments
+- A estratégia completa está documentada na ADR: `docs/adr/0005-database-environments.md`
