@@ -134,6 +134,28 @@ Requisitos mínimos para o logger:
 
 ---
 
+## ⚙️ CI/CD Pipelines
+
+O projeto usa **5 workflows independentes** no GitHub Actions, segmentados por pacote (ADR-0006).
+
+| Workflow | Arquivo | Paths que acionam | Responsabilidade |
+|---|---|---|---|
+| CI Backend | `ci-backend.yml` | `backend/**`, `database/**`, `integration-tests/**` | MySQL efêmero, migrate deploy, unit tests, build, integration tests, lint |
+| CI Frontend | `ci-frontend.yml` | `frontend/**` | Testes Vitest + lint TypeScript |
+| Deploy Database | `deploy-database.yml` | `database/prisma/migrations/**`, `database/prisma/schema.prisma` | `prisma migrate deploy` → HML → prod |
+| Deploy Backend | `deploy-backend.yml` | `backend/**`, `database/**` | `db:generate` + deploy da API → HML → prod |
+| Deploy Frontend | `deploy-frontend.yml` | `frontend/**` | Build e deploy do Next.js → HML → prod |
+
+**Fallback (aciona todos os workflows):** alterações em `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `docker-compose.yml` ou `.github/workflows/**` acionam todos os jobs.
+
+**Regra importante:** `prisma migrate deploy` no deploy roda **apenas** via `deploy-database.yml`, acionado exclusivamente por mudanças em `database/prisma/migrations/**` ou `database/prisma/schema.prisma` (ou fallback raiz).
+
+**Sequência de deploy:** dentro de cada workflow, a sequência é `hml → prod` garantida via `needs`. Os 3 workflows de deploy são independentes entre si (executam em paralelo quando acionados).
+
+> ⚠️ **Risco de paralelismo aceito**: um commit que modifique `database/prisma/migrations/**` ou `database/prisma/schema.prisma` aciona simultaneamente `deploy-database.yml` e `deploy-backend.yml`. Os dois rodam em paralelo — não há garantia de que as migrations serão aplicadas antes do backend subir. Ver ADR-0006.
+
+---
+
 ## 🔁 Git Workflow
 
 - Branches:

@@ -28,6 +28,14 @@ dude-course/
   pnpm-workspace.yaml
   package.json                # root — scripts globais, devDependencies compartilhadas
 
+  .github/
+    workflows/
+      ci-backend.yml          # CI: backend + integration-tests (com MySQL efêmero)
+      ci-frontend.yml         # CI: frontend (testes + lint)
+      deploy-database.yml     # Deploy: prisma migrate deploy → HML → prod
+      deploy-backend.yml      # Deploy: API → HML → prod
+      deploy-frontend.yml     # Deploy: Next.js → HML → prod
+
   docs/
     architecture.md
     domain.md

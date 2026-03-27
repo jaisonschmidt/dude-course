@@ -236,6 +236,8 @@ Preferred workflow:
 - ADR-0002: MySQL 8.0 + Prisma (`docs/adr/0002-database-mysql.md`)
 - ADR-0003: Next.js Hybrid Rendering (`docs/adr/0003-frontend-nextjs.md`)
 - ADR-0004: JWT Bearer Token Auth (`docs/adr/0004-auth-jwt.md`)
+- ADR-0005: Database Migration Strategy (`docs/adr/0005-database-environments.md`)
+- ADR-0006: CI/CD Workflow Segmentation (`docs/adr/0006-cicd-workflow-segmentation.md`)
 
 ---
 
