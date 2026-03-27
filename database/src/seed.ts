@@ -35,6 +35,7 @@ async function main() {
     where: { id: 1 },
     update: {},
     create: {
+      id: 1,
       title: 'Introdução ao TypeScript',
       description: 'Aprenda os fundamentos do TypeScript do zero ao avançado.',
       status: 'published',
@@ -45,6 +46,7 @@ async function main() {
     where: { id: 2 },
     update: {},
     create: {
+      id: 2,
       title: 'Node.js Avançado (Em breve)',
       description: 'Curso em desenvolvimento — ainda não publicado.',
       status: 'draft',
