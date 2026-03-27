@@ -149,6 +149,46 @@ Requisitos mínimos para o logger:
 
 ---
 
+## 🪝 Git Hooks (Husky + lint-staged)
+
+O projeto usa **Husky** + **lint-staged** para barrar erros localmente antes do push, reduzindo quebras na pipeline de CI.
+
+Os hooks são instalados automaticamente após `pnpm install` via o script `prepare` no `package.json` raiz.
+
+### Hook `pre-commit`
+
+Executa `lint-staged` apenas nos arquivos staged:
+
+| Glob | Comando | O que valida |
+|------|---------|--------------|
+| `backend/src/**/*.ts` | `tsc --noEmit -p backend/tsconfig.json` | Type-check TypeScript do backend (valida o projeto inteiro) |
+| `frontend/src/**/*.{ts,tsx}` | `eslint --max-warnings=0` | Lint Next.js/React/TypeScript no frontend |
+
+> **Nota**: O `tsc --noEmit` sempre analisa o projeto TypeScript inteiro, independentemente de quais arquivos estão staged. Erros em arquivos fora do staged também serão reportados — isso é intencional para garantir type-safety.
+
+### Hook `pre-push`
+
+Executa os testes unitários do backend:
+
+```sh
+pnpm --filter backend test
+```
+
+Os testes de integração (`integration-tests/`) continuam sendo executados apenas na pipeline de CI.
+
+### Contornar hooks (uso restrito)
+
+Em casos emergenciais (ex.: hotfix crítico), é possível ignorar os hooks com:
+
+```sh
+git commit --no-verify
+git push --no-verify
+```
+
+> ⚠️ Usar somente em situações excepcionais. O bypass deve ser comunicado ao time e o código revisado com atenção redobrada na CI.
+
+---
+
 ## ✅ Definition of Done (DoD)
 
 Uma tarefa só é “done” quando:

@@ -1,13 +1,21 @@
-// eslint.config.mjs — Next.js 15 flat config (baseline minimal)
+// eslint.config.mjs — Next.js 15 flat config
+import { dirname } from 'path'
+import { fileURLToPath } from 'url'
+import { FlatCompat } from '@eslint/eslintrc'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+const compat = new FlatCompat({
+  baseDirectory: __dirname,
+})
+
 /** @type {import('eslint').Linter.Config[]} */
 const eslintConfig = [
   {
     ignores: ['.next/**', 'node_modules/**', 'dist/**'],
   },
-  {
-    files: ['src/**/*.{ts,tsx}'],
-    rules: {},
-  },
+  ...compat.extends('next/core-web-vitals', 'next/typescript'),
 ]
 
 export default eslintConfig

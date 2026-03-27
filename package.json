@@ -16,6 +16,15 @@
     "build": "pnpm -r --if-present build",
     "test": "pnpm -r --if-present test",
     "lint": "pnpm -r --if-present lint",
-    "format": "pnpm -r --if-present format"
+    "format": "pnpm -r --if-present format",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0"
+  },
+  "lint-staged": {
+    "backend/src/**/*.ts": "bash -c 'tsc --noEmit -p backend/tsconfig.json'",
+    "frontend/src/**/*.{ts,tsx}": "eslint --max-warnings=0"
   }
 }
