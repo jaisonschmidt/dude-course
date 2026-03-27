@@ -5,6 +5,7 @@ import { env } from './config/env.js'
 import requestIdPlugin from './plugins/request-id.js'
 import corsPlugin from './plugins/cors.js'
 import { registerErrorHandler } from './middlewares/error-handler.js'
+import { registerNotFoundHandler } from './middlewares/not-found.js'
 import { registerRoutes } from './routes/index.js'
 import { logger } from './utils/logger.js'
 
@@ -27,6 +28,7 @@ export async function buildServer() {
   await app.register(corsPlugin)
 
   registerErrorHandler(app)
+  registerNotFoundHandler(app)
 
   app.get('/health', async (request, reply) => {
     const mem = process.memoryUsage()

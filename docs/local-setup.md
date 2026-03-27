@@ -96,7 +96,7 @@ NEW_RELIC_LICENSE_KEY=
 Crie `frontend/.env.local`:
 
 ```env
-NEXT_PUBLIC_API_BASE_URL=http://localhost:3001/api/v1
+NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
 ```
 
 Alternativamente, copie de `frontend/.env.example`.
@@ -119,14 +119,28 @@ cd database
 # Gerar Prisma Client
 pnpm db:generate
 
-# Rodar migrations
+# Rodar migrations (apenas em desenvolvimento local)
 pnpm db:migrate:dev
 
-# Rodar seed (quando disponível)
+# Rodar seed
 pnpm db:seed
 ```
 
-Observação: o scaffold inicial do monorepo cria a estrutura dos pacotes e arquivos-base. Os comandos específicos de Prisma passam a funcionar após a baseline do pacote `database` ser concluída.
+> ⚠️ **`migrate dev` é exclusivo de desenvolvimento local.** Nunca use este comando em CI, staging ou produção — ele pode resetar dados. Em todos os outros ambientes, use `prisma migrate deploy`.
+
+### Banco de testes isolado (para rodar `integration-tests/` localmente)
+
+Os testes de integração usam um banco separado para não contaminar dados de desenvolvimento. Crie-o uma única vez:
+
+```sql
+CREATE DATABASE dude_course_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+Crie o arquivo `integration-tests/.env` baseado em `integration-tests/.env.example`:
+
+```env
+DATABASE_URL=mysql://root:root@localhost:3306/dude_course_test
+```
 
 ---
 
