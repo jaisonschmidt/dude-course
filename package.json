@@ -24,7 +24,7 @@
     "lint-staged": "^16.4.0"
   },
   "lint-staged": {
-    "backend/src/**/*.ts": "bash -c 'tsc --noEmit -p backend/tsconfig.json'",
-    "frontend/src/**/*.{ts,tsx}": "eslint --max-warnings=0"
+    "backend/src/**/*.ts": "bash -c 'pnpm --filter backend exec tsc --noEmit'",
+    "frontend/src/**/*.{ts,tsx}": "pnpm --filter frontend exec eslint --max-warnings=0"
   }
 }
