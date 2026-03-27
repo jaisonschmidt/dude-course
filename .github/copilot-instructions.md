@@ -28,6 +28,18 @@ Before creating or changing code, always consult:
 
 ## 2) Non-negotiable rules
 
+### Git workflow (branching)
+Follow the **Hybrid GitFlow** strategy defined in `docs/engineer-guidelines.md` → section **Git Workflow** and `docs/adr/0006-branching-strategy.md`.
+
+**Rules for agents:**
+- Always create branches from `develop` — **never from `main`**
+- Never commit directly to `main` or `develop`
+- Branch naming: `feature/<issue-number>-<slug>`, `fix/<issue-number>-<slug>`, `chore/<slug>`
+- Commit messages must follow **Conventional Commits** with monorepo scopes:
+  `feat(backend): ...`, `fix(database): ...`, `test(integration-tests): ...`
+- Always add `Refs #<issue-number>` at the end of commit messages
+- Migrations must be committed in the same branch/PR as the backend code that requires them
+
 ### Do NOT invent
 - Do not invent endpoints not described in `docs/api-spec.md`
 - Do not invent tables/columns not described in `docs/database.md`

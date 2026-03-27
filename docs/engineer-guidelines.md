@@ -136,16 +136,165 @@ Requisitos mínimos para o logger:
 
 ## 🔁 Git Workflow
 
-- Branches:
-  - `main`: estável
-  - `feat/<tema>`: features
-  - `fix/<tema>`: correções
-  - `chore/<tema>`: manutenção
-- PR obrigatório para merge em `main`.
-- PR deve incluir:
-  - descrição do que mudou
-  - checklist de testes
-  - link de issue (se houver)
+A estratégia de branching adotada é o **Hybrid GitFlow** (GitFlow-lite para monorepo).
+Decisão registrada em: `docs/adr/0006-branching-strategy.md`
+
+### Modelo de branches
+
+```
+main  ←── release/v1.2.0  ←── develop  ←── feature/42-enrollment
+ ↑                                    ←── fix/55-login-crash
+ └──── hotfix/99-payment-null               chore/ci-add-lint
+```
+
+| Branch | Propósito | Criado a partir de | Merge destino | Estratégia |
+|---|---|---|---|---|
+| `main` | Produção. Sempre estável e tagueado | — | — | merge commit |
+| `develop` | Integração. Deploy automático para HML | `main` (1x) | via `release/*` | — |
+| `feature/<N>-<slug>` | Novas funcionalidades | `develop` | `develop` | squash merge |
+| `fix/<N>-<slug>` | Correções não-críticas | `develop` | `develop` | squash merge |
+| `chore/<slug>` | Infra, docs, manutenção | `develop` | `develop` | squash merge |
+| `release/vX.Y.Z` | Release candidate | `develop` | `main` + `develop` | merge commit |
+| `hotfix/<N>-<slug>` | Correção crítica em produção | `main` | `main` + `develop` | merge commit |
+
+### Nomenclatura obrigatória
+
+Formato: `<tipo>/<número-da-issue>-<slug-descritivo>`
+
+```
+feature/42-course-enrollment
+fix/55-login-crash
+chore/ci-add-lint
+hotfix/99-payment-null-pointer
+release/v1.2.0
+```
+
+- O número da issue é obrigatório em `feature/*`, `fix/*` e `hotfix/*`
+- O slug deve ser em `kebab-case`, descritivo e curto (máx. ~5 palavras)
+
+### Fluxo: Feature → Staging → Produção
+
+```
+1. Cria feature/<N>-<slug> a partir de develop
+2. Implementa (qualquer pacote do monorepo: backend/, frontend/, database/, integration-tests/)
+   └── Migrations SEMPRE commitadas junto com o código que as exige (ADR-0005)
+3. Abre PR para develop
+   └── CI: build + unit tests + integration tests + prisma migrate deploy (HML efêmero)
+4. ≥1 aprovação → squash merge para develop
+5. develop em HML → validação pela equipe (critérios de aceitação da issue)
+6. Quando develop estável para release:
+   a. Cria release/vX.Y.Z a partir de develop
+   b. Apenas bugfixes são permitidos na release branch
+   c. Atualiza CHANGELOG.md / GitHub Release draft
+   d. Fecha Milestone vX.Y.Z
+7. PR: release/vX.Y.Z → main (merge commit)
+8. Tag vX.Y.Z criada em main → GitHub Release publicada
+9. CI: prisma migrate deploy em produção → deploy de produção
+10. OBRIGATÓRIO: release/vX.Y.Z mergeado de volta para develop
+```
+
+### Fluxo de Hotfix (bug crítico em produção)
+
+```
+1. Cria hotfix/<N>-<slug> a partir de main
+2. Corrige o bug (inclui teste regressivo)
+3. PR: hotfix → main (merge commit) → incrementa PATCH → tag vX.Y.(Z+1)
+4. GitHub Release publicada para o patch
+5. OBRIGATÓRIO: PR hotfix → develop (sincronização imediata)
+```
+
+**Quando usar hotfix?** Apenas quando um bug em produção causa impacto crítico e não pode aguardar o próximo ciclo de release.
+
+### Conventional Commits
+
+Adotar a especificação [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+<type>(<scope>): <descrição curta>
+
+[body opcional — contexto adicional]
+
+Refs #<issue-number>
+```
+
+**Tipos válidos:**
+
+| Tipo | Quando usar |
+|---|---|
+| `feat` | Nova funcionalidade |
+| `fix` | Correção de bug |
+| `chore` | Manutenção, infra, tooling |
+| `docs` | Apenas documentação |
+| `refactor` | Refatoração sem mudança de comportamento |
+| `test` | Adição ou correção de testes |
+| `perf` | Melhoria de performance |
+| `ci` | Mudanças em CI/CD |
+| `build` | Sistema de build, dependências |
+
+**Escopos do monorepo** (obrigatório quando aplicável):
+
+`backend` · `frontend` · `database` · `integration-tests` · `ci` · `docs`
+
+**Exemplos:**
+
+```
+feat(backend): add course enrollment endpoint Refs #23
+fix(database): fix migration for lesson_progress Refs #31
+chore(ci): add prisma migrate deploy step for HML Refs #14
+docs(engineer-guidelines): update git workflow section Refs #14
+test(integration-tests): add enrollment e2e test Refs #23
+```
+
+**Breaking changes:** adicionar `!` após o tipo e incluir `BREAKING CHANGE:` no footer:
+
+```
+feat(backend)!: change enrollment API response shape Refs #45
+
+BREAKING CHANGE: field `courseId` renamed to `course_id` in enrollment response.
+```
+
+### Versionamento Semântico (SemVer)
+
+Formato: `vMAJOR.MINOR.PATCH` (ex.: `v1.2.3`)
+
+| Incremento | Quando usar | Exemplo |
+|---|---|---|
+| `MAJOR` | Breaking change de API, migration destrutiva, mudança estrutural | `v1.0.0 → v2.0.0` |
+| `MINOR` | Nova feature backward-compatible | `v1.0.0 → v1.1.0` |
+| `PATCH` | Bugfix, hotfix, ajuste sem quebra | `v1.0.0 → v1.0.1` |
+
+Milestones iniciais planejados: `v0.1.0` (MVP backend), `v0.2.0` (MVP frontend), `v1.0.0` (produção).
+
+### Tags e GitHub Releases
+
+1. Tags são criadas **exclusivamente em `main`** via PR de `release/vX.Y.Z`
+2. Formato da tag: `vMAJOR.MINOR.PATCH`
+3. Cada tag deve ter uma **GitHub Release publicada** com:
+   - Resumo das mudanças (features, fixes, breaking changes)
+   - Links para issues/PRs incluídos
+   - Link para o Milestone fechado
+4. **GitHub Releases é o changelog oficial** — ver `CHANGELOG.md` na raiz
+5. Milestones do GitHub agrupam issues por versão planejada e são fechados no momento da release
+
+### Branch Protection Rules (recomendado)
+
+**`main`:**
+- Require pull request with ≥1 approval before merging
+- Require status checks to pass: `ci/build`, `ci/unit-tests`, `ci/integration-tests`
+- Require branches to be up to date before merging
+- No force pushes, no direct commits, no deletions
+
+**`develop`:**
+- Require pull request with ≥1 approval before merging
+- Require status checks to pass: `ci/build`, `ci/unit-tests`
+- No force pushes
+
+### Considerações específicas para monorepo
+
+- **Um PR pode e deve tocar múltiplos pacotes** — ex.: `database/` + `backend/` + `integration-tests/` em um único PR de feature
+- **Migrations** devem ser versionadas **no mesmo commit** que o código de backend que as requer (ADR-0005)
+- **Tags são no nível raiz** — o monorepo é versionado como uma unidade, não por pacote
+- **CI detecta pacotes alterados** para otimizar jobs, mas migrations e integration-tests sempre rodam
 
 ---
 
