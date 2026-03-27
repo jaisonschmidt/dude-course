@@ -1,14 +1,32 @@
-name: CI
+name: CI — Backend
 
 on:
   pull_request:
     branches: [main]
+    paths:
+      - 'backend/**'
+      - 'database/**'
+      - 'integration-tests/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'docker-compose.yml'
+      - '.github/workflows/**'
   push:
     branches: [main]
+    paths:
+      - 'backend/**'
+      - 'database/**'
+      - 'integration-tests/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'docker-compose.yml'
+      - '.github/workflows/**'
 
 jobs:
-  ci:
-    name: Test & Lint
+  test-backend:
+    name: Test Backend
     runs-on: ubuntu-latest
 
     services:

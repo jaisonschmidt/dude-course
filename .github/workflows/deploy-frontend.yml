@@ -1,0 +1,78 @@
+name: Deploy — Frontend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'docker-compose.yml'
+      - '.github/workflows/**'
+
+jobs:
+  deploy-frontend-hml:
+    name: Deploy Frontend — HML
+    runs-on: ubuntu-latest
+    environment: hml
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        run: pnpm --filter frontend build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+
+      # TODO: add frontend deploy step (e.g. Vercel, Netlify, AWS S3+CloudFront)
+      - name: Deploy frontend (HML)
+        run: echo "Add frontend deploy command here"
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+
+  deploy-frontend-prod:
+    name: Deploy Frontend — Production
+    runs-on: ubuntu-latest
+    environment: prod
+    needs: [deploy-frontend-hml]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        run: pnpm --filter frontend build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+
+      # TODO: add frontend deploy step
+      - name: Deploy frontend (Production)
+        run: echo "Add frontend deploy command here"
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
