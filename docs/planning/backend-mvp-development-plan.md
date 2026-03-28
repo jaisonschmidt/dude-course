@@ -201,7 +201,7 @@ Aggregate enrollment data, progress, and completion status for the learner dashb
 - [ ] Create dashboard DTOs, controller, routes (protected)
 - [ ] Unit tests (4+ cases), integration tests (4+ tests)
 
-### �� Documentation (Phase 5)
+### 📋 Documentation (Phase 5)
 - **UPDATE**: `api-spec.md` (full response example), `domain.md` (progress calculation)
 
 ---
@@ -412,7 +412,7 @@ Comprehensive test coverage with journey tests and error scenario coverage.
 | 2. Catalog | 🟡 Medium | Pagination contract and response shapes |
 | 3. Enrollment | 🟢 Low | Idempotency decision |
 | 4. Progress | 🟡 Medium | Auto-completion is critical domain rule |
-| 5. Dashboard | �� Low | Response shape only |
+| 5. Dashboard | 🟢 Low | Response shape only |
 | 6. Certificate | 🟢 Low | Code generation approach |
 | 7. Admin | 🔴 High | **9 new endpoints from scratch**. RBAC ADR required |
 | 8. Observability | 🟡 Medium | Spec vs implementation validation |
