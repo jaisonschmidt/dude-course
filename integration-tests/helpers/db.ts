@@ -26,10 +26,10 @@ let prisma: TestPrisma | null = null
  */
 async function getOrCreateTestPrisma(): Promise<TestPrisma> {
   if (!prisma) {
-    const databaseUrl = process.env.DATABASE_URL_TEST
+    const databaseUrl = process.env.DATABASE_URL_TEST ?? process.env.DATABASE_URL
     if (!databaseUrl) {
       throw new Error(
-        'DATABASE_URL_TEST environment variable is not set. ' +
+        'DATABASE_URL_TEST (or DATABASE_URL) environment variable is not set. ' +
           'Point it to your test database (e.g., mysql://root:pass@localhost:3306/dude_course_test)',
       )
     }

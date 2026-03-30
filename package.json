@@ -17,6 +17,7 @@
     "test": "pnpm -r --if-present test",
     "lint": "pnpm -r --if-present lint",
     "format": "pnpm -r --if-present format",
+    "validate": "pnpm lint && pnpm --filter backend test",
     "prepare": "husky"
   },
   "devDependencies": {

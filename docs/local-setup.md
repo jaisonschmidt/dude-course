@@ -173,6 +173,48 @@ Frontend disponível em `http://localhost:3000`.
 
 ---
 
+## 🛡️ Validação local pré-CI
+
+O projeto possui um comando `validate` que espelha as verificações feitas pela pipeline de CI. Ele é executado automaticamente no hook `pre-push`, mas pode ser rodado manualmente a qualquer momento:
+
+```bash
+pnpm validate
+```
+
+O comando executa em sequência:
+1. **`pnpm lint`** — type-check de todos os pacotes do monorepo (`backend`, `frontend`, `integration-tests`, `database`)
+2. **`pnpm --filter backend test`** — testes unitários do backend
+
+### O que isso previne?
+
+| Problema | Detecção | Exemplo |
+|----------|----------|---------|
+| Erro de compilação em qualquer pacote | `pnpm lint` (tsc --noEmit) | Import de símbolo inexistente em `integration-tests/` |
+| Teste unitário quebrando | `pnpm --filter backend test` | Mock desatualizado após refactor de service |
+| Type mismatch entre pacotes | `pnpm lint` em todos | DTO alterado no backend mas não no integration-tests |
+
+### Testes de integração locais (opcional)
+
+Testes de integração requerem backend + MySQL rodando. Para rodar localmente:
+
+```bash
+# 1. Subir MySQL e backend
+pnpm dev:db
+pnpm dev:backend
+
+# 2. Rodar testes de integração
+RUN_INTEGRATION_TESTS=true DATABASE_URL_TEST=mysql://root:root@localhost:3306/dude_course_test \
+  pnpm --filter integration-tests test
+```
+
+> **Nota**: A variável `DATABASE_URL_TEST` pode ser definida no arquivo `integration-tests/.env`. Se não existir, o helper aceita `DATABASE_URL` como fallback.
+
+### Regra de ouro
+
+> **Se `pnpm validate` passa localmente, a CI não deve falhar por erros de compilação ou testes unitários.**
+>
+> Falhas de CI que escapam ao `validate` local indicam que o hook precisa ser estendido — abra uma issue se isso acontecer.
+
 ## 📦 Scripts úteis (raiz do monorepo)
 
 ```bash
