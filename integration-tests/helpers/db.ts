@@ -79,38 +79,39 @@ export async function teardownDb(): Promise<void> {
 }
 
 /**
- * Truncate all tables in FK-safe order.
+ * Delete all rows from all tables in FK-safe order.
  * Call this in beforeEach() to reset DB state between tests.
  *
- * Truncation order (respects foreign key constraints):
+ * Uses DELETE FROM instead of TRUNCATE TABLE because:
+ * - Prisma uses connection pooling, so SET FOREIGN_KEY_CHECKS = 0
+ *   may run on a different connection than the TRUNCATE statements,
+ *   causing FK constraint errors in MySQL.
+ * - DELETE FROM in correct dependency order (children → parents)
+ *   respects FK constraints naturally without needing to toggle checks.
+ *
+ * Deletion order (children first):
  * 1. lesson_progress (FK → users, courses, lessons)
  * 2. enrollments (FK → users, courses)
  * 3. certificates (FK → users, courses)
  * 4. lessons (FK → courses)
- * 5. courses (no FK dependencies)
- * 6. users (no FK dependencies)
+ * 5. courses (no FK dependents after above deletions)
+ * 6. users (no FK dependents after above deletions)
  */
 export async function truncateAll(): Promise<void> {
   const client = await getOrCreateTestPrisma()
 
   try {
-    // Disable foreign key checks temporarily
-    await client.$executeRaw`SET FOREIGN_KEY_CHECKS = 0`
+    // Delete in FK-safe order: children before parents
+    await client.$executeRaw`DELETE FROM lesson_progress`
+    await client.$executeRaw`DELETE FROM enrollments`
+    await client.$executeRaw`DELETE FROM certificates`
+    await client.$executeRaw`DELETE FROM lessons`
+    await client.$executeRaw`DELETE FROM courses`
+    await client.$executeRaw`DELETE FROM users`
 
-    // Truncate tables in order (names must match @@map in Prisma schema)
-    await client.$executeRaw`TRUNCATE TABLE lesson_progress`
-    await client.$executeRaw`TRUNCATE TABLE enrollments`
-    await client.$executeRaw`TRUNCATE TABLE certificates`
-    await client.$executeRaw`TRUNCATE TABLE lessons`
-    await client.$executeRaw`TRUNCATE TABLE courses`
-    await client.$executeRaw`TRUNCATE TABLE users`
-
-    // Re-enable foreign key checks
-    await client.$executeRaw`SET FOREIGN_KEY_CHECKS = 1`
-
-    console.info('[test] truncateAll: All tables truncated')
+    console.info('[test] truncateAll: All tables cleaned')
   } catch (err) {
-    console.error('[test] truncateAll: Failed to truncate tables', err)
+    console.error('[test] truncateAll: Failed to clean tables', err)
     throw err
   }
 }

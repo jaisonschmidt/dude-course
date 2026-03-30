@@ -89,6 +89,25 @@ return Number(rows[0]!.id)
 ```
 - MySQL returns `bigint` for `LAST_INSERT_ID()` — always wrap with `Number()`
 
+### Prisma connection pooling caveats
+- Prisma uses connection pooling — each `$executeRaw`/`$queryRaw` may run on a **different connection**
+- `SET FOREIGN_KEY_CHECKS = 0` is **session-scoped** — it only affects the connection that executed it
+- ❌ Never use `TRUNCATE TABLE` with `SET FOREIGN_KEY_CHECKS = 0` across multiple `$executeRaw` calls — the SET and TRUNCATE may run on different connections, causing FK constraint errors
+- ✅ Use `DELETE FROM` in correct FK dependency order (children → parents) instead — no FK_CHECKS toggle needed
+
+### Table cleanup pattern (truncateAll)
+```typescript
+// ✅ Correct — DELETE FROM in FK-safe order (children first)
+await prisma.$executeRaw`DELETE FROM lesson_progress`
+await prisma.$executeRaw`DELETE FROM lessons`
+await prisma.$executeRaw`DELETE FROM courses`
+await prisma.$executeRaw`DELETE FROM users`
+
+// ❌ WRONG — TRUNCATE with FK_CHECKS across connections (unreliable)
+await prisma.$executeRaw`SET FOREIGN_KEY_CHECKS = 0`  // connection A
+await prisma.$executeRaw`TRUNCATE TABLE lessons`       // connection B — FK_CHECKS still enabled!
+```
+
 ### Database alignment (critical)
 - The backend process and the test seed functions **must connect to the same database**
 - Tests insert data via Prisma into `dude_course_test`; the API must also read from `dude_course_test`
