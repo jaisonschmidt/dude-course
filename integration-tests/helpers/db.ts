@@ -12,15 +12,19 @@
  *   afterAll(teardownDb)
  */
 
-import { PrismaClient } from '@prisma/client'
+type TestPrisma = {
+  $queryRaw: (query: TemplateStringsArray, ...values: unknown[]) => Promise<unknown>
+  $executeRaw: (query: TemplateStringsArray, ...values: unknown[]) => Promise<unknown>
+  $disconnect: () => Promise<void>
+}
 
-let prisma: PrismaClient | null = null
+let prisma: TestPrisma | null = null
 
 /**
  * Get or create the test Prisma client.
  * Connects using DATABASE_URL_TEST environment variable.
  */
-function getTestPrisma(): PrismaClient {
+async function getTestPrisma(): Promise<TestPrisma> {
   if (!prisma) {
     const databaseUrl = process.env.DATABASE_URL_TEST
     if (!databaseUrl) {
@@ -30,14 +34,9 @@ function getTestPrisma(): PrismaClient {
       )
     }
 
-    prisma = new PrismaClient({
-      datasources: {
-        db: {
-          url: databaseUrl,
-        },
-      },
-      log: process.env.DEBUG ? ['warn', 'error'] : ['error'],
-    })
+    process.env.DATABASE_URL = databaseUrl
+    const database = await import('database')
+    prisma = database.prisma as TestPrisma
   }
 
   return prisma
@@ -50,7 +49,7 @@ function getTestPrisma(): PrismaClient {
  * 3. Ensure it's ready for tests
  */
 export async function setupDb(): Promise<void> {
-  const client = getTestPrisma()
+  const client = await getTestPrisma()
 
   try {
     // Run migrations to ensure schema is up-to-date
@@ -92,7 +91,7 @@ export async function teardownDb(): Promise<void> {
  * 6. user (no FK dependencies)
  */
 export async function truncateAll(): Promise<void> {
-  const client = getTestPrisma()
+  const client = await getTestPrisma()
 
   try {
     // Disable foreign key checks temporarily
