@@ -65,7 +65,7 @@ Consulte `docs/engineer-guidelines.md` (seção ADRs) para o processo completo.
 ### 6. Instruções para uso de IA
 
 | Arquivo | Propósito |
-|---------|-----------|
+|---------|----------|
 | `.github/copilot-instructions.md` | Instruções gerais para Copilot |
 | `.github/instructions/backend-architecture.instructions.md` | Limites de camada e naming |
 | `.github/instructions/database-migrations.instructions.md` | Padrões de migration |
@@ -73,6 +73,79 @@ Consulte `docs/engineer-guidelines.md` (seção ADRs) para o processo completo.
 | `.github/instructions/api-controllers.instructions.md` | Formato de response e validação |
 | `.github/instructions/security.instructions.md` | Auth, JWT, validação |
 | `.github/instructions/frontend-pages.instructions.md` | Patterns do framework frontend |
+
+## 🚀 Como Rodar
+
+### Pré-requisitos
+
+- **Node.js ≥ 24**
+- **pnpm ≥ 10**
+- **Docker + Docker Compose**
+
+### Quick Start
+
+1. Clone o repositório:
+   ```bash
+   git clone <repo-url>
+   cd dude-course
+   ```
+
+2. Instale as dependências do monorepo:
+   ```bash
+   pnpm install
+   ```
+
+3. Suba o MySQL via Docker:
+   ```bash
+   pnpm dev:db
+   ```
+
+4. Copie os arquivos de variáveis de ambiente:
+   ```bash
+   cp backend/.env.example backend/.env
+   cp frontend/.env.example frontend/.env.local
+   cp database/.env.example database/.env
+   cp integration-tests/.env.example integration-tests/.env
+   ```
+
+5. Execute as migrations e o seed:
+   ```bash
+   pnpm --filter database db:migrate:dev
+   pnpm --filter database db:seed
+   ```
+
+6. Suba o backend e o frontend em paralelo:
+   ```bash
+   pnpm dev
+   ```
+
+### Mapa de Portas
+
+| Serviço | Porta |
+|---------|-------|
+| Frontend | `:3000` |
+| Backend API | `:3001` |
+| MySQL | `:3306` |
+
+### Scripts disponíveis (raiz)
+
+| Script | Descrição |
+|--------|-----------|
+| `pnpm dev` | Sobe backend e frontend em paralelo |
+| `pnpm dev:backend` | Sobe apenas o backend |
+| `pnpm dev:frontend` | Sobe apenas o frontend |
+| `pnpm dev:db` | Sobe o MySQL via Docker (Docker Compose) |
+| `pnpm test` | Roda todos os testes do monorepo |
+| `pnpm build` | Builda todos os pacotes |
+
+> Para setup detalhado (env vars, banco de testes, etc.), consulte [`docs/local-setup.md`](docs/local-setup.md).
+
+### READMEs por pacote
+
+- [backend/README.md](backend/README.md) — API Fastify + MVC
+- [frontend/README.md](frontend/README.md) — Next.js 15 App Router
+- [database/README.md](database/README.md) — Prisma ORM, migrations, seed
+- [integration-tests/README.md](integration-tests/README.md) — Testes de integração
 
 ## Agentes
 
