@@ -1,24 +1,85 @@
 import type { Certificate, CreateCertificateData } from '../models/certificate.js'
+import { prisma } from 'database'
 
 export interface ICertificateRepository {
-  findByUserAndCourse(userId: number, courseId: number): Promise<Certificate | null>
-  findByCode(code: string): Promise<Certificate | null>
   create(data: CreateCertificateData): Promise<Certificate>
+  findById(id: number): Promise<Certificate | null>
+  findByUserAndCourse(userId: number, courseId: number): Promise<Certificate | null>
+  findByCertificateCode(code: string): Promise<Certificate | null>
+  delete(id: number): Promise<boolean>
 }
 
 export class PrismaCertificateRepository implements ICertificateRepository {
-  async findByUserAndCourse(_userId: number, _courseId: number): Promise<Certificate | null> {
-    // TODO: implement with Prisma
-    throw new Error('PrismaCertificateRepository.findByUserAndCourse not implemented')
+  async create(data: CreateCertificateData): Promise<Certificate> {
+    const certificate = await prisma.certificate.create({
+      data: {
+        userId: data.userId,
+        courseId: data.courseId,
+        certificateCode: data.certificateCode,
+      },
+    })
+
+    return this.mapToCertificate(certificate)
   }
 
-  async findByCode(_code: string): Promise<Certificate | null> {
-    // TODO: implement with Prisma
-    throw new Error('PrismaCertificateRepository.findByCode not implemented')
+  async findById(id: number): Promise<Certificate | null> {
+    const certificate = await prisma.certificate.findUnique({
+      where: { id },
+    })
+
+    if (!certificate) {
+      return null
+    }
+
+    return this.mapToCertificate(certificate)
   }
 
-  async create(_data: CreateCertificateData): Promise<Certificate> {
-    // TODO: implement with Prisma
-    throw new Error('PrismaCertificateRepository.create not implemented')
+  async findByUserAndCourse(userId: number, courseId: number): Promise<Certificate | null> {
+    const certificate = await prisma.certificate.findUnique({
+      where: {
+        userId_courseId: { userId, courseId },
+      },
+    })
+
+    if (!certificate) {
+      return null
+    }
+
+    return this.mapToCertificate(certificate)
+  }
+
+  async findByCertificateCode(code: string): Promise<Certificate | null> {
+    const certificate = await prisma.certificate.findUnique({
+      where: { certificateCode: code },
+    })
+
+    if (!certificate) {
+      return null
+    }
+
+    return this.mapToCertificate(certificate)
+  }
+
+  async delete(id: number): Promise<boolean> {
+    try {
+      await prisma.certificate.delete({
+        where: { id },
+      })
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  private mapToCertificate(certificate: any): Certificate {
+    return {
+      id: certificate.id,
+      userId: certificate.userId,
+      courseId: certificate.courseId,
+      certificateCode: certificate.certificateCode,
+      issuedAt: certificate.issuedAt,
+      createdAt: certificate.createdAt,
+      updatedAt: certificate.updatedAt,
+    }
   }
 }

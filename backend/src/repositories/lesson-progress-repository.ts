@@ -1,24 +1,81 @@
 import type { LessonProgress, CreateLessonProgressData } from '../models/lesson-progress.js'
+import { prisma } from 'database'
 
 export interface ILessonProgressRepository {
-  findByUserAndLesson(userId: number, lessonId: number): Promise<LessonProgress | null>
-  findByUserAndCourse(userId: number, courseId: number): Promise<LessonProgress[]>
   create(data: CreateLessonProgressData): Promise<LessonProgress>
+  findById(id: number): Promise<LessonProgress | null>
+  findByUserAndLesson(userId: number, lessonId: number): Promise<LessonProgress | null>
+  findByCourseProgress(userId: number, courseId: number): Promise<LessonProgress[]>
+  delete(id: number): Promise<boolean>
 }
 
 export class PrismaLessonProgressRepository implements ILessonProgressRepository {
-  async findByUserAndLesson(_userId: number, _lessonId: number): Promise<LessonProgress | null> {
-    // TODO: implement with Prisma
-    throw new Error('PrismaLessonProgressRepository.findByUserAndLesson not implemented')
+  async create(data: CreateLessonProgressData): Promise<LessonProgress> {
+    const progress = await prisma.lessonProgress.create({
+      data: {
+        userId: data.userId,
+        courseId: data.courseId,
+        lessonId: data.lessonId,
+      },
+    })
+
+    return this.mapToLessonProgress(progress)
   }
 
-  async findByUserAndCourse(_userId: number, _courseId: number): Promise<LessonProgress[]> {
-    // TODO: implement with Prisma
-    throw new Error('PrismaLessonProgressRepository.findByUserAndCourse not implemented')
+  async findById(id: number): Promise<LessonProgress | null> {
+    const progress = await prisma.lessonProgress.findUnique({
+      where: { id },
+    })
+
+    if (!progress) {
+      return null
+    }
+
+    return this.mapToLessonProgress(progress)
   }
 
-  async create(_data: CreateLessonProgressData): Promise<LessonProgress> {
-    // TODO: implement with Prisma
-    throw new Error('PrismaLessonProgressRepository.create not implemented')
+  async findByUserAndLesson(userId: number, lessonId: number): Promise<LessonProgress | null> {
+    const progress = await prisma.lessonProgress.findUnique({
+      where: {
+        userId_lessonId: { userId, lessonId },
+      },
+    })
+
+    if (!progress) {
+      return null
+    }
+
+    return this.mapToLessonProgress(progress)
+  }
+
+  async findByCourseProgress(userId: number, courseId: number): Promise<LessonProgress[]> {
+    const progress = await prisma.lessonProgress.findMany({
+      where: { userId, courseId },
+    })
+
+    return progress.map((p) => this.mapToLessonProgress(p))
+  }
+
+  async delete(id: number): Promise<boolean> {
+    try {
+      await prisma.lessonProgress.delete({
+        where: { id },
+      })
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  private mapToLessonProgress(progress: any): LessonProgress {
+    return {
+      id: progress.id,
+      userId: progress.userId,
+      courseId: progress.courseId,
+      lessonId: progress.lessonId,
+      completedAt: progress.completedAt,
+      createdAt: progress.createdAt,
+      updatedAt: progress.updatedAt,
+    }
   }
 }

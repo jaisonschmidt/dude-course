@@ -23,6 +23,9 @@ importers:
       bcrypt:
         specifier: ^6.0.0
         version: 6.0.0
+      database:
+        specifier: workspace:*
+        version: link:../database
       fastify:
         specifier: ^5.8.4
         version: 5.8.4
@@ -73,6 +76,9 @@ importers:
         specifier: ^3.0.3
         version: 3.0.3
     devDependencies:
+      '@types/node':
+        specifier: ^24.0.0
+        version: 24.12.0
       prisma:
         specifier: ^6.5.0
         version: 6.19.2(magicast@0.3.5)(typescript@5.9.3)
@@ -145,6 +151,10 @@ importers:
         version: 3.2.4(@types/node@22.19.15)(jiti@1.21.7)(jsdom@25.0.1)(lightningcss@1.32.0)(tsx@4.21.0)(yaml@2.8.3)
 
   integration-tests:
+    dependencies:
+      database:
+        specifier: workspace:*
+        version: link:../database
     devDependencies:
       '@types/node':
         specifier: ^24.0.0
