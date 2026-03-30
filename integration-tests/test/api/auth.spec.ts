@@ -84,7 +84,7 @@ describeOrSkip('Auth Endpoints', () => {
       })
 
       const prisma = getTestPrisma()
-      const rows = await prisma.$queryRaw`SELECT password_hash FROM user WHERE email = 'jane-hash@example.com'` as Array<{ password_hash: string }>
+      const rows = await prisma.$queryRaw`SELECT password_hash FROM users WHERE email = 'jane-hash@example.com'` as Array<{ password_hash: string }>
 
       expect(rows).toHaveLength(1)
       expect(rows[0]!.password_hash).not.toBe('securepassword123')
