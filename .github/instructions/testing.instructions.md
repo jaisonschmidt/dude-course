@@ -71,3 +71,25 @@ For every use case / endpoint:
 - Use factory functions for creating test fixtures
 - Never mock domain entities — use real ones with test data
 - Reset mocks between tests with `vi.clearAllMocks()` or `beforeEach`
+
+## Integration test seed functions (Prisma raw SQL)
+
+When writing seed helpers in `integration-tests/`, follow these rules:
+
+### Correct Prisma methods
+- **`$executeRaw`** for INSERT, UPDATE, DELETE (write operations)
+- **`$queryRaw`** for SELECT (read operations)
+- ❌ Never use `$queryRaw` for INSERT — it may silently fail in MySQL
+
+### LAST_INSERT_ID pattern
+```typescript
+await prisma.$executeRaw`INSERT INTO table_name (...) VALUES (...)`
+const rows = await prisma.$queryRaw`SELECT LAST_INSERT_ID() as id` as Array<{ id: bigint }>
+return Number(rows[0]!.id)
+```
+- MySQL returns `bigint` for `LAST_INSERT_ID()` — always wrap with `Number()`
+
+### Database alignment (critical)
+- The backend process and the test seed functions **must connect to the same database**
+- Tests insert data via Prisma into `dude_course_test`; the API must also read from `dude_course_test`
+- If the backend points to `dude_course` while seeds go to `dude_course_test`, all data-dependent tests will fail with empty results

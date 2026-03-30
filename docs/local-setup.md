@@ -195,19 +195,39 @@ O comando executa em sequência:
 
 ### Testes de integração locais (opcional)
 
-Testes de integração requerem backend + MySQL rodando. Para rodar localmente:
+Testes de integração requerem MySQL + backend rodando **contra o banco de teste**.
+
+> ⚠️ **Armadilha comum**: o backend e os testes de integração **devem apontar para o mesmo banco de dados**. Os testes fazem seed direto no DB via Prisma, enquanto a API lê desse mesmo DB. Se o backend estiver no `dude_course` e os testes no `dude_course_test`, os dados inseridos pelos seeds serão invisíveis para a API.
+
+#### Passo a passo completo
 
 ```bash
-# 1. Subir MySQL e backend
+# 1. Subir MySQL via Docker
 pnpm dev:db
-pnpm dev:backend
 
-# 2. Rodar testes de integração
-RUN_INTEGRATION_TESTS=true DATABASE_URL_TEST=mysql://root:root@localhost:3306/dude_course_test \
+# 2. Criar banco de testes (apenas na primeira vez)
+docker exec dude-course-mysql mysql -uroot -proot \
+  -e "CREATE DATABASE IF NOT EXISTS dude_course_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# 3. Aplicar migrations no banco de testes
+DATABASE_URL="mysql://root:root@localhost:3306/dude_course_test" \
+  pnpm --filter database exec prisma migrate deploy
+
+# 4. Iniciar backend apontando para o banco de TESTE
+DATABASE_URL="mysql://root:root@localhost:3306/dude_course_test" \
+  JWT_SECRET="test-secret-key-minimum-32-characters-long" \
+  pnpm dev:backend
+
+# 5. Em outro terminal, rodar testes de integração
+RUN_INTEGRATION_TESTS=true \
+  DATABASE_URL_TEST="mysql://root:root@localhost:3306/dude_course_test" \
+  BACKEND_URL="http://localhost:3001" \
   pnpm --filter integration-tests test
 ```
 
-> **Nota**: A variável `DATABASE_URL_TEST` pode ser definida no arquivo `integration-tests/.env`. Se não existir, o helper aceita `DATABASE_URL` como fallback.
+> **Dica**: Após validar, reinicie o backend com `DATABASE_URL` apontando para `dude_course` para retomar o desenvolvimento normal.
+
+> **Alternativa**: Crie `integration-tests/.env` baseado no `.env.example` para não precisar passar variáveis toda vez. O helper `db.ts` usa `DATABASE_URL_TEST` e aceita `DATABASE_URL` como fallback.
 
 ### Regra de ouro
 
@@ -249,12 +269,15 @@ pnpm --filter frontend lint
 | Problema | Solução |
 |----------|---------|
 | Erro de conexão com MySQL | Verificar se MySQL/Docker está rodando e `DATABASE_URL` no `.env` |
-| Porta 3001 em uso | Alterar `PORT` no `backend/.env` |
+| Porta 3001 em uso | Alterar `PORT` no `backend/.env` ou `kill $(lsof -ti:3001)` |
 | Porta 3000 em uso | Parar outro processo Next.js ou alterar porta |
 | Migrations falham | Verificar se o banco `dude_course` existe e credenciais estão corretas |
 | Prisma Client desatualizado | Rodar `pnpm db:generate` no pacote `database/` |
 | JWT inválido | Verificar `JWT_SECRET` no backend `.env` |
 | `pnpm install` falha | Verificar versão do pnpm e Node.js 24 |
+| Integration tests: dados não aparecem na API | Backend e testes **devem usar o mesmo banco** (`dude_course_test`). Reinicie o backend com `DATABASE_URL` apontando para o banco de teste |
+| Integration tests: seed insere mas API retorna vazio | Confirme que seeds usam `$executeRaw` (INSERT) e não `$queryRaw` (SELECT) — ver guidelines em `testing.instructions.md` |
+| Integration tests: `LAST_INSERT_ID` retorna errado | MySQL retorna `bigint` — use `Number(rows[0]!.id)` para converter |
 
 ---
 
