@@ -29,11 +29,11 @@ Adotar **JWT Bearer Token** como método de autenticação.
 - Hash de senha: **bcrypt** (mínimo 10 rounds)
 - Token enviado via header `Authorization: Bearer <token>`
 - Logout client-side (remover token do storage)
-- Payload do token: `{ userId, email, role }`
+- Payload do token: `{ sub: userId, email, role }` (usa claim padrão `sub` do JWT)
 
 **Fluxo:**
-1. `POST /api/v1/auth/register` — cria conta, retorna token
-2. `POST /api/v1/auth/login` — valida credenciais, retorna token
+1. `POST /api/v1/auth/register` — cria conta, retorna dados do usuário (sem token)
+2. `POST /api/v1/auth/login` — valida credenciais, retorna access token + dados do usuário
 3. Rotas protegidas: middleware valida token, extrai user context
 4. Token expirado: retorna 401, frontend redireciona para login
 

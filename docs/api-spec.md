@@ -90,6 +90,22 @@ Os endpoints de autenticação abaixo compõem a baseline funcional inicial do p
 - **409 Conflict** — Email já existe
 - **400 Validation Error**
 
+Exemplo de resposta (201):
+
+```json
+{
+  "data": {
+    "id": 1,
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "role": "learner"
+  },
+  "requestId": "req_123"
+}
+```
+
+> **Nota:** o register retorna apenas os dados do usuário, sem token. O client deve chamar `POST /auth/login` para obter o access token.
+
 ---
 
 ### POST /auth/login

@@ -121,8 +121,9 @@ backend/
       certificate-routes.ts
       index.ts                # registra todas as rotas
     middlewares/               # auth, requestId, error handling
-      auth-middleware.ts
+      auth.ts
       error-handler.ts
+      not-found.ts
     dto/                      # schemas Zod e tipos request/response
       auth-dto.ts
       course-dto.ts
