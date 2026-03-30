@@ -76,13 +76,13 @@ async function seedCourse(overrides: {
   const thumbnailUrl = overrides.thumbnailUrl ?? null
   const status = overrides.status ?? 'published'
 
-  const result = await prisma.$queryRaw`
+  await prisma.$executeRaw`
     INSERT INTO courses (title, description, thumbnail_url, status, created_at, updated_at)
     VALUES (${title}, ${description}, ${thumbnailUrl}, ${status}, NOW(), NOW())
-  ` as any
+  `
 
   // Get the last inserted id
-  const rows = await prisma.$queryRaw`SELECT LAST_INSERT_ID() as id` as Array<{ id: number }>
+  const rows = await prisma.$queryRaw`SELECT LAST_INSERT_ID() as id` as Array<{ id: bigint }>
   return Number(rows[0]!.id)
 }
 
@@ -101,12 +101,12 @@ async function seedLesson(overrides: {
   const description = overrides.description ?? null
   const youtubeUrl = overrides.youtubeUrl ?? 'https://youtube.com/watch?v=test'
 
-  await prisma.$queryRaw`
+  await prisma.$executeRaw`
     INSERT INTO lessons (course_id, title, description, youtube_url, position, created_at, updated_at)
     VALUES (${overrides.courseId}, ${title}, ${description}, ${youtubeUrl}, ${overrides.position}, NOW(), NOW())
   `
 
-  const rows = await prisma.$queryRaw`SELECT LAST_INSERT_ID() as id` as Array<{ id: number }>
+  const rows = await prisma.$queryRaw`SELECT LAST_INSERT_ID() as id` as Array<{ id: bigint }>
   return Number(rows[0]!.id)
 }
 
