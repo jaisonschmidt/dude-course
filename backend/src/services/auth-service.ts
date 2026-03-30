@@ -1,5 +1,9 @@
+import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
 import type { IUserRepository } from '../repositories/user-repository.js'
 import type { AuthUserResponseDto, LoginResponseDto } from '../dto/auth-dto.js'
+import { ConflictError, UnauthorizedError } from '../models/errors.js'
+import { env } from '../config/env.js'
 
 export interface RegisterInput {
   name: string
@@ -12,24 +16,59 @@ export interface LoginInput {
   password: string
 }
 
+const BCRYPT_ROUNDS = 10
+
 export class AuthService {
   constructor(private readonly userRepository: IUserRepository) {}
 
-  async register(_data: RegisterInput): Promise<AuthUserResponseDto> {
-    // TODO: implement
-    // 1. Check if email already exists (findByEmail) → throw 409 CONFLICT if found
-    // 2. Hash password with bcrypt (min 10 rounds) — never store plain password
-    // 3. Create user via userRepository.create()
-    // 4. Return user DTO (without passwordHash)
-    throw new Error('AuthService.register not implemented')
+  async register(data: RegisterInput): Promise<AuthUserResponseDto> {
+    const existing = await this.userRepository.findByEmail(data.email)
+    if (existing) {
+      throw new ConflictError('Email already registered')
+    }
+
+    const passwordHash = await bcrypt.hash(data.password, BCRYPT_ROUNDS)
+
+    const user = await this.userRepository.create({
+      name: data.name,
+      email: data.email,
+      passwordHash,
+    })
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    }
   }
 
-  async login(_data: LoginInput): Promise<LoginResponseDto> {
-    // TODO: implement
-    // 1. Find user by email → throw 401 UNAUTHORIZED if not found
-    // 2. Compare password with bcrypt → throw 401 if mismatch
-    // 3. Sign JWT with env.JWT_SECRET, expiresIn: '1h'
-    // 4. Never include passwordHash in response
-    throw new Error('AuthService.login not implemented')
+  async login(data: LoginInput): Promise<LoginResponseDto> {
+    const user = await this.userRepository.findByEmail(data.email)
+    if (!user) {
+      throw new UnauthorizedError('Invalid credentials')
+    }
+
+    const passwordMatch = await bcrypt.compare(data.password, user.passwordHash)
+    if (!passwordMatch) {
+      throw new UnauthorizedError('Invalid credentials')
+    }
+
+    const accessToken = jwt.sign(
+      { sub: user.id, email: user.email, role: user.role },
+      env.JWT_SECRET,
+      { expiresIn: '1h' },
+    )
+
+    return {
+      accessToken,
+      expiresIn: '1h',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    }
   }
 }

@@ -41,7 +41,16 @@ export async function post<T = unknown>(
     headers: { 'Content-Type': 'application/json', ...headers },
     body: JSON.stringify(data),
   })
-  const body = (await res.json()) as T
+
+  // Handle empty responses (e.g., 204 No Content)
+  let body: T
+  const contentLength = res.headers.get('content-length')
+  if (res.status === 204 || contentLength === '0') {
+    body = undefined as unknown as T
+  } else {
+    body = (await res.json()) as T
+  }
+
   return {
     status: res.status,
     body,

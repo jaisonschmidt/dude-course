@@ -24,7 +24,7 @@ let prisma: TestPrisma | null = null
  * Get or create the test Prisma client.
  * Connects using DATABASE_URL_TEST environment variable.
  */
-async function getTestPrisma(): Promise<TestPrisma> {
+async function getOrCreateTestPrisma(): Promise<TestPrisma> {
   if (!prisma) {
     const databaseUrl = process.env.DATABASE_URL_TEST
     if (!databaseUrl) {
@@ -49,7 +49,7 @@ async function getTestPrisma(): Promise<TestPrisma> {
  * 3. Ensure it's ready for tests
  */
 export async function setupDb(): Promise<void> {
-  const client = await getTestPrisma()
+  const client = await getOrCreateTestPrisma()
 
   try {
     // Run migrations to ensure schema is up-to-date
@@ -91,7 +91,7 @@ export async function teardownDb(): Promise<void> {
  * 6. user (no FK dependencies)
  */
 export async function truncateAll(): Promise<void> {
-  const client = await getTestPrisma()
+  const client = await getOrCreateTestPrisma()
 
   try {
     // Disable foreign key checks temporarily
@@ -115,3 +115,13 @@ export async function truncateAll(): Promise<void> {
   }
 }
 
+/**
+ * Get the test Prisma client (must call setupDb first).
+ * Useful for direct DB assertions in tests.
+ */
+export function getTestPrisma(): TestPrisma {
+  if (!prisma) {
+    throw new Error('Test Prisma client not initialised. Call setupDb() first.')
+  }
+  return prisma
+}
