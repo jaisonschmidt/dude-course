@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
 import Fastify from 'fastify'
+import { prisma } from 'database'
 import { env } from './config/env.js'
 import requestIdPlugin from './plugins/request-id.js'
 import corsPlugin from './plugins/cors.js'
@@ -50,10 +51,18 @@ export async function buildServer() {
 
     checks.api = 'ok'
 
-    // TODO: add database check here when Prisma is wired into the backend
-    // e.g.:
-    //   try { await prisma.$queryRaw`SELECT 1`; checks.db = 'ok' }
-    //   catch { checks.db = 'error'; allReady = false }
+    // Check database connectivity
+    try {
+      await prisma.$queryRaw`SELECT 1`
+      checks.database = 'ok'
+    } catch (err) {
+      logger.error(
+        { error: err, requestId: request.id },
+        'Database health check failed',
+      )
+      checks.database = 'error'
+      allReady = false
+    }
 
     if (allReady) {
       return reply.status(200).send({

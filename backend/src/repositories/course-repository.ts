@@ -1,33 +1,89 @@
 import type { Course, CreateCourseData, CourseStatus } from '../models/course.js'
+import { prisma } from 'database'
 
 export interface ICourseRepository {
-  findById(id: number): Promise<Course | null>
-  findAllPublished(page: number, pageSize: number): Promise<{ items: Course[]; total: number }>
   create(data: CreateCourseData): Promise<Course>
-  updateStatus(id: number, status: CourseStatus): Promise<Course>
+  findById(id: number): Promise<Course | null>
+  findByStatus(status: CourseStatus): Promise<Course[]>
+  update(id: number, data: Partial<CreateCourseData>): Promise<Course | null>
+  delete(id: number): Promise<boolean>
 }
 
 export class PrismaCourseRepository implements ICourseRepository {
-  async findById(_id: number): Promise<Course | null> {
-    // TODO: implement with Prisma
-    throw new Error('PrismaCourseRepository.findById not implemented')
+  async create(data: CreateCourseData): Promise<Course> {
+    const course = await prisma.course.create({
+      data: {
+        title: data.title,
+        description: data.description,
+        thumbnailUrl: data.thumbnailUrl ?? null,
+        status: data.status ?? 'draft',
+      },
+    })
+
+    return this.mapToCourse(course)
   }
 
-  async findAllPublished(
-    _page: number,
-    _pageSize: number,
-  ): Promise<{ items: Course[]; total: number }> {
-    // TODO: implement with Prisma
-    throw new Error('PrismaCourseRepository.findAllPublished not implemented')
+  async findById(id: number): Promise<Course | null> {
+    const course = await prisma.course.findUnique({
+      where: { id },
+    })
+
+    if (!course) {
+      return null
+    }
+
+    return this.mapToCourse(course)
   }
 
-  async create(_data: CreateCourseData): Promise<Course> {
-    // TODO: implement with Prisma
-    throw new Error('PrismaCourseRepository.create not implemented')
+  async findByStatus(status: CourseStatus): Promise<Course[]> {
+    const courses = await prisma.course.findMany({
+      where: { status },
+    })
+
+    return courses.map((c) => this.mapToCourse(c))
   }
 
-  async updateStatus(_id: number, _status: CourseStatus): Promise<Course> {
-    // TODO: implement with Prisma
-    throw new Error('PrismaCourseRepository.updateStatus not implemented')
+  async update(
+    id: number,
+    data: Partial<CreateCourseData>,
+  ): Promise<Course | null> {
+    try {
+      const course = await prisma.course.update({
+        where: { id },
+        data: {
+          ...(data.title !== undefined && { title: data.title }),
+          ...(data.description !== undefined && { description: data.description }),
+          ...(data.thumbnailUrl !== undefined && { thumbnailUrl: data.thumbnailUrl }),
+          ...(data.status !== undefined && { status: data.status }),
+        },
+      })
+
+      return this.mapToCourse(course)
+    } catch {
+      return null
+    }
+  }
+
+  async delete(id: number): Promise<boolean> {
+    try {
+      await prisma.course.delete({
+        where: { id },
+      })
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  private mapToCourse(course: any): Course {
+    return {
+      id: course.id,
+      title: course.title,
+      description: course.description,
+      thumbnailUrl: course.thumbnailUrl,
+      status: course.status,
+      createdAt: course.createdAt,
+      updatedAt: course.updatedAt,
+    }
   }
 }
