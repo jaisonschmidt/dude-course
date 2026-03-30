@@ -9,9 +9,9 @@ import { setupDb, teardownDb, truncateAll } from '../../helpers/db.js'
 import {
   createLessonCreateDataFactory,
   createCourseCreateDataFactory,
-} from '../../../backend/test/helpers/factories.js'
-import { PrismaLessonRepository } from '../../../backend/src/repositories/lesson-repository.js'
-import { PrismaCourseRepository } from '../../../backend/src/repositories/course-repository.js'
+} from '../../helpers/factories.js'
+import { PrismaLessonRepository } from '../../../src/repositories/lesson-repository.js'
+import { PrismaCourseRepository } from '../../../src/repositories/course-repository.js'
 
 describe('PrismaLessonRepository', () => {
   let repo: PrismaLessonRepository

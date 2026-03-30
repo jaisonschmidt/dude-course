@@ -11,11 +11,11 @@ import {
   createUserCreateDataFactory,
   createCourseCreateDataFactory,
   createLessonCreateDataFactory,
-} from '../../../backend/test/helpers/factories.js'
-import { PrismaLessonProgressRepository } from '../../../backend/src/repositories/lesson-progress-repository.js'
-import { PrismaUserRepository } from '../../../backend/src/repositories/user-repository.js'
-import { PrismaCourseRepository } from '../../../backend/src/repositories/course-repository.js'
-import { PrismaLessonRepository } from '../../../backend/src/repositories/lesson-repository.js'
+} from '../../helpers/factories.js'
+import { PrismaLessonProgressRepository } from '../../../src/repositories/lesson-progress-repository.js'
+import { PrismaUserRepository } from '../../../src/repositories/user-repository.js'
+import { PrismaCourseRepository } from '../../../src/repositories/course-repository.js'
+import { PrismaLessonRepository } from '../../../src/repositories/lesson-repository.js'
 
 describe('PrismaLessonProgressRepository', () => {
   let repo: PrismaLessonProgressRepository

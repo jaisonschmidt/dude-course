@@ -10,8 +10,8 @@ import { setupDb, teardownDb, truncateAll } from '../../helpers/db.js'
 import {
   createUserCreateDataFactory,
   createUserFactory,
-} from '../../../backend/test/helpers/factories.js'
-import { PrismaUserRepository } from '../../../backend/src/repositories/user-repository.js'
+} from '../../helpers/factories.js'
+import { PrismaUserRepository } from '../../../src/repositories/user-repository.js'
 
 describe('PrismaUserRepository', () => {
   let repo: PrismaUserRepository

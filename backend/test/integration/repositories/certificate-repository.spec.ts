@@ -10,10 +10,10 @@ import {
   createCertificateCreateDataFactory,
   createUserCreateDataFactory,
   createCourseCreateDataFactory,
-} from '../../../backend/test/helpers/factories.js'
-import { PrismaCertificateRepository } from '../../../backend/src/repositories/certificate-repository.js'
-import { PrismaUserRepository } from '../../../backend/src/repositories/user-repository.js'
-import { PrismaCourseRepository } from '../../../backend/src/repositories/course-repository.js'
+} from '../../helpers/factories.js'
+import { PrismaCertificateRepository } from '../../../src/repositories/certificate-repository.js'
+import { PrismaUserRepository } from '../../../src/repositories/user-repository.js'
+import { PrismaCourseRepository } from '../../../src/repositories/course-repository.js'
 
 describe('PrismaCertificateRepository', () => {
   let repo: PrismaCertificateRepository

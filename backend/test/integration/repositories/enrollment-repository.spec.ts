@@ -10,10 +10,10 @@ import {
   createEnrollmentCreateDataFactory,
   createUserCreateDataFactory,
   createCourseCreateDataFactory,
-} from '../../../backend/test/helpers/factories.js'
-import { PrismaEnrollmentRepository } from '../../../backend/src/repositories/enrollment-repository.js'
-import { PrismaUserRepository } from '../../../backend/src/repositories/user-repository.js'
-import { PrismaCourseRepository } from '../../../backend/src/repositories/course-repository.js'
+} from '../../helpers/factories.js'
+import { PrismaEnrollmentRepository } from '../../../src/repositories/enrollment-repository.js'
+import { PrismaUserRepository } from '../../../src/repositories/user-repository.js'
+import { PrismaCourseRepository } from '../../../src/repositories/course-repository.js'
 
 describe('PrismaEnrollmentRepository', () => {
   let repo: PrismaEnrollmentRepository

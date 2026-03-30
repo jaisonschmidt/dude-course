@@ -9,8 +9,8 @@ import { setupDb, teardownDb, truncateAll } from '../../helpers/db.js'
 import {
   createCourseCreateDataFactory,
   createCourseFactory,
-} from '../../../backend/test/helpers/factories.js'
-import { PrismaCourseRepository } from '../../../backend/src/repositories/course-repository.js'
+} from '../../helpers/factories.js'
+import { PrismaCourseRepository } from '../../../src/repositories/course-repository.js'
 
 describe('PrismaCourseRepository', () => {
   let repo: PrismaCourseRepository
