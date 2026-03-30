@@ -190,13 +190,19 @@ Executa `lint-staged` apenas nos arquivos staged:
 
 ### Hook `pre-push`
 
-Executa os testes unitários do backend:
+Executa a validação completa que espelha o que a CI fará:
 
 ```sh
-pnpm --filter backend test
+pnpm validate
 ```
 
-Os testes de integração (`integration-tests/`) continuam sendo executados apenas na pipeline de CI.
+O comando `validate` executa em sequência:
+1. `pnpm lint` — type-check de **todos** os pacotes (backend, frontend, integration-tests, database)
+2. `pnpm --filter backend test` — testes unitários do backend
+
+Essa abordagem garante que erros de compilação em qualquer pacote (incluindo `integration-tests/`) sejam capturados **antes do push**, evitando falhas na pipeline de CI.
+
+> **Nota**: Os testes de integração (`integration-tests/`) requerem backend + MySQL rodando e continuam sendo executados apenas na CI ou sob demanda local com `RUN_INTEGRATION_TESTS=true`.
 
 ### Contornar hooks (uso restrito)
 

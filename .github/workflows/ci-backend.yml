@@ -99,6 +99,7 @@ jobs:
         run: pnpm --filter integration-tests test
         env:
           RUN_INTEGRATION_TESTS: 'true'
+          DATABASE_URL_TEST: ${{ env.DATABASE_URL }}
 
       - name: Lint
         run: pnpm lint
