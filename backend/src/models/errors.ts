@@ -28,3 +28,9 @@ export class UnauthorizedError extends AppError {
     super(message, 401)
   }
 }
+
+export class NotFoundError extends AppError {
+  constructor(message = 'Resource not found') {
+    super(message, 404)
+  }
+}
