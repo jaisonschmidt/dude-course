@@ -83,12 +83,12 @@ export async function teardownDb(): Promise<void> {
  * Call this in beforeEach() to reset DB state between tests.
  *
  * Truncation order (respects foreign key constraints):
- * 1. lesson_progress (FK to user, course, lesson)
- * 2. enrollment (FK to user, course)
- * 3. certificate (FK to user, course)
- * 4. lesson (FK to course)
- * 5. course (no FK dependencies)
- * 6. user (no FK dependencies)
+ * 1. lesson_progress (FK → users, courses, lessons)
+ * 2. enrollments (FK → users, courses)
+ * 3. certificates (FK → users, courses)
+ * 4. lessons (FK → courses)
+ * 5. courses (no FK dependencies)
+ * 6. users (no FK dependencies)
  */
 export async function truncateAll(): Promise<void> {
   const client = await getOrCreateTestPrisma()
@@ -97,13 +97,13 @@ export async function truncateAll(): Promise<void> {
     // Disable foreign key checks temporarily
     await client.$executeRaw`SET FOREIGN_KEY_CHECKS = 0`
 
-    // Truncate tables in order
+    // Truncate tables in order (names must match @@map in Prisma schema)
     await client.$executeRaw`TRUNCATE TABLE lesson_progress`
-    await client.$executeRaw`TRUNCATE TABLE enrollment`
-    await client.$executeRaw`TRUNCATE TABLE certificate`
-    await client.$executeRaw`TRUNCATE TABLE lesson`
-    await client.$executeRaw`TRUNCATE TABLE course`
-    await client.$executeRaw`TRUNCATE TABLE user`
+    await client.$executeRaw`TRUNCATE TABLE enrollments`
+    await client.$executeRaw`TRUNCATE TABLE certificates`
+    await client.$executeRaw`TRUNCATE TABLE lessons`
+    await client.$executeRaw`TRUNCATE TABLE courses`
+    await client.$executeRaw`TRUNCATE TABLE users`
 
     // Re-enable foreign key checks
     await client.$executeRaw`SET FOREIGN_KEY_CHECKS = 1`
