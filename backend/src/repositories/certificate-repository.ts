@@ -6,6 +6,7 @@ export interface ICertificateRepository {
   create(data: CreateCertificateData): Promise<Certificate>
   findById(id: number): Promise<Certificate | null>
   findByUserAndCourse(userId: number, courseId: number): Promise<Certificate | null>
+  findByUserId(userId: number): Promise<Certificate[]>
   findByCertificateCode(code: string): Promise<Certificate | null>
   delete(id: number): Promise<boolean>
 }
@@ -47,6 +48,14 @@ export class PrismaCertificateRepository implements ICertificateRepository {
     }
 
     return this.mapToCertificate(certificate)
+  }
+
+  async findByUserId(userId: number): Promise<Certificate[]> {
+    const certificates = await prisma.certificate.findMany({
+      where: { userId },
+    })
+
+    return certificates.map((c) => this.mapToCertificate(c))
   }
 
   async findByCertificateCode(code: string): Promise<Certificate | null> {
