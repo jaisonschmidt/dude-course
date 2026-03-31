@@ -28,6 +28,19 @@ export interface RegisterResponse {
 }
 
 /**
+ * Sets a cookie accessible by Next.js middleware for route protection.
+ * This is NOT httpOnly — it's a routing hint, not a security mechanism.
+ */
+function syncTokenCookie(token: string | null): void {
+  if (typeof document === 'undefined') return
+  if (token) {
+    document.cookie = `${TOKEN_KEY}=${token}; path=/; SameSite=Lax`
+  } else {
+    document.cookie = `${TOKEN_KEY}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`
+  }
+}
+
+/**
  * Autentica o usuário e armazena o token no localStorage.
  * Em produção, considerar migração para httpOnly cookie.
  */
@@ -42,6 +55,7 @@ export async function login(
 
   if (typeof window !== 'undefined') {
     localStorage.setItem(TOKEN_KEY, data.accessToken)
+    syncTokenCookie(data.accessToken)
   }
 
   return data
@@ -70,6 +84,7 @@ export async function register(
 export function logout(): void {
   if (typeof window !== 'undefined') {
     localStorage.removeItem(TOKEN_KEY)
+    syncTokenCookie(null)
   }
 }
 
