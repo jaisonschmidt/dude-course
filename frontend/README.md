@@ -6,6 +6,14 @@ Faz parte do monorepo `dude-course`. Consulte o [README raiz](../README.md) para
 
 ---
 
+## ✅ Pré-requisitos
+
+- **Node.js ≥ 24** e **pnpm ≥ 10** (ver [README raiz](../README.md))
+- **Backend rodando** em `http://localhost:3001` (ver [backend/README.md](../backend/README.md))
+- **MySQL rodando** com migrations aplicadas (ver [docs/local-setup.md](../docs/local-setup.md))
+
+---
+
 ## ⚙️ Variáveis de Ambiente
 
 Copie o arquivo de exemplo antes de rodar:
@@ -134,3 +142,29 @@ Organização: cada pasta de componentes/services/hooks tem uma subpasta `__test
 | `/admin/courses/new` | Admin | Criar curso |
 | `/admin/courses/:id/edit` | Admin | Editar + publicar/despublicar/deletar |
 | `/admin/courses/:id/lessons` | Admin | Gerenciar aulas (CRUD + drag-and-drop) |
+
+---
+
+## 🔑 Credenciais para Testar
+
+Após rodar o seed do banco de dados (`pnpm --filter database db:seed`), os seguintes usuários estão disponíveis:
+
+| Email | Senha | Role | O que testar |
+|-------|-------|------|-------------|
+| `admin@dudecourse.local` | `Admin@123456` | `admin` | Painel admin, CRUD de cursos e aulas |
+| `learner@dudecourse.local` | `Learner@123456` | `learner` | Catálogo, player de aula, dashboard, certificados |
+
+> O learner já possui uma matrícula no curso "Introdução ao TypeScript" com 1 aula concluída (33% de progresso).
+
+---
+
+## 🐛 Troubleshooting
+
+| Problema | Solução |
+|----------|--------|
+| Tela branca / erro de fetch | Verificar se o backend está rodando em `http://localhost:3001` |
+| `NEXT_PUBLIC_API_URL` não funciona | Reiniciar o dev server após alterar `.env.local` (Next.js cacheia env vars no build) |
+| Login retorna 401 | Verificar se o seed foi executado (`pnpm --filter database db:seed`) |
+| Redirecionado para `/login` sempre | Token expirado — faça login novamente. Verifique `JWT_EXPIRES_IN` no backend |
+| Página admin mostra 403 | Verificar que logou com conta `admin` (role `admin`) e não `learner` |
+| Componentes não renderizam | Rodar `pnpm --filter frontend lint` para verificar erros de tipo |

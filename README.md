@@ -15,7 +15,19 @@ Desenvolvido com **squad de 11 agentes de IA** especializados, usando GitHub Cop
 - **Containerização:** Docker + Docker Compose
 - **Auth:** JWT Bearer Token (bcrypt)
 
-### 3. Documentos do Projeto
+## ✨ Features
+
+- 📚 **Catálogo de cursos** — navegação pública com paginação
+- ▶️ **Player de aulas** — YouTube embed integrado com marcação de progresso
+- 📊 **Dashboard do aluno** — progresso por curso e porcentagem de conclusão
+- 🎓 **Certificados** — geração automática ao completar 100% das aulas
+- 🔐 **Autenticação** — registro, login (JWT), proteção de rotas por role
+- 🛠️ **Painel admin** — CRUD de cursos e aulas, drag-and-drop para reordenar, publicar/despublicar
+- 📖 **Swagger UI** — documentação interativa da API em `/documentation` (dev/staging)
+
+## 📖 Documentação
+
+### Documentos do Projeto
 
 | Documento | O que preencher |
 |-----------|----------------|
@@ -26,7 +38,7 @@ Desenvolvido com **squad de 11 agentes de IA** especializados, usando GitHub Cop
 | [docs/local-setup.md](docs/local-setup.md) | Banco de dados, variáveis de ambiente, passos de setup |
 | [CONTEXT_PACK.md](CONTEXT_PACK.md) | Snapshot condensado do projeto para onboarding rápido de IA |
 
-### 3. Documentação de engenharia
+### Documentação de engenharia
 
 | Documento | Conteúdo |
 |-----------|----------|
@@ -36,7 +48,7 @@ Desenvolvido com **squad de 11 agentes de IA** especializados, usando GitHub Cop
 | [docs/engineer-guidelines.md](docs/engineer-guidelines.md) | Naming, testes, git workflow, DoD |
 | [docs/project-structure.md](docs/project-structure.md) | Estrutura recomendada de pastas |
 
-### 4. Configurar MCP
+### Configurar MCP
 
 Crie `.vscode/mcp.json` com o GitHub MCP (obrigatório para os agentes interagirem com issues e PRs):
 
@@ -53,7 +65,7 @@ Crie `.vscode/mcp.json` com o GitHub MCP (obrigatório para os agentes interagir
 
 MCPs opcionais: Playwright (testes e2e), DB, Figma, etc.
 
-### 5. Criar ADRs do projeto
+### Criar ADRs do projeto
 
 O template inclui:
 - `docs/adr/0000-adr-template.md` — Template padrão com instruções e mini-exemplo (copie para criar novas ADRs)
@@ -62,7 +74,7 @@ Crie ADRs para decisões do projeto (estilo arquitetural, linguagem, banco, fram
 
 Consulte `docs/engineer-guidelines.md` (seção ADRs) para o processo completo.
 
-### 6. Instruções para uso de IA
+### Instruções para uso de IA
 
 | Arquivo | Propósito |
 |---------|----------|
@@ -118,6 +130,36 @@ Consulte `docs/engineer-guidelines.md` (seção ADRs) para o processo completo.
    ```bash
    pnpm dev
    ```
+
+### 🔑 Credenciais do Seed
+
+Após rodar o seed, os seguintes usuários estão disponíveis para login:
+
+| Email | Senha | Role | Descrição |
+|-------|-------|------|----------|
+| `admin@dudecourse.local` | `Admin@123456` | `admin` | Acesso ao painel admin |
+| `learner@dudecourse.local` | `Learner@123456` | `learner` | Aluno com matrícula e progresso |
+
+> O seed também cria: 1 curso publicado ("Introdução ao TypeScript" com 3 aulas), 1 curso draft, 1 matrícula do learner e 1 aula concluída.
+
+### 📖 Swagger UI
+
+Com o backend rodando em modo `development`, acesse a documentação interativa da API:
+
+- **Swagger UI**: http://localhost:3001/documentation
+- **OpenAPI JSON**: http://localhost:3001/documentation/json
+
+Para testar endpoints protegidos: faça login via `POST /api/v1/auth/login`, copie o token e clique em **Authorize** → `Bearer <token>`.
+
+### ✅ Validação pré-push
+
+```bash
+pnpm validate
+```
+
+Executa lint (type-check) + testes unitários do backend. Roda automaticamente no hook `pre-push`.
+
+> Para detalhes completos sobre validação e testes de integração, consulte [`docs/local-setup.md`](docs/local-setup.md).
 
 ### Mapa de Portas
 
