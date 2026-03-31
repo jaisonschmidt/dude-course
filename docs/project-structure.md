@@ -252,9 +252,17 @@ integration-tests/
 
 ## 🌐 Frontend (Next.js App Router)
 
-### Estrutura de pastas
+### Dependências-chave
 
-> Legenda: ✅ Implementado | 📋 Planejado
+| Lib | Propósito |
+|-----|-----------|
+| `react-hook-form` + `zod` + `@hookform/resolvers` | Formulários tipados com validação |
+| `@dnd-kit/core` + `@dnd-kit/sortable` + `@dnd-kit/utilities` | Drag-and-drop para reordenação de aulas (admin) |
+| React Context API | Auth state global (`AuthProvider`) |
+| Vitest + Testing Library + user-event | Testes unitários e de componentes |
+| Tailwind CSS | Estilização utility-first |
+
+### Estrutura de pastas
 
 ```
 frontend/
@@ -264,51 +272,137 @@ frontend/
   next.config.ts
   tailwind.config.ts
   src/
-    app/                      # Next.js App Router
-      layout.tsx              # ✅ root layout
-      page.tsx                # ✅ homepage
-      globals.css             # ✅ estilos globais
+    middleware.ts               # Next.js middleware — proteção de rotas server-side
+    app/                        # Next.js App Router
+      layout.tsx                # root layout (AuthProvider + Header + Footer)
+      layout-shell.tsx          # shell visual (Header + Footer wrapper)
+      providers.tsx             # client providers (AuthProvider)
+      page.tsx                  # homepage (hero + cursos em destaque)
+      error.tsx                 # error boundary global (retry + link homepage)
+      not-found.tsx             # página 404 customizada
+      globals.css               # estilos globais (Tailwind)
       (auth)/
-        login/page.tsx        # ✅ página de login
-        register/page.tsx     # ✅ página de registro
+        login/page.tsx          # página de login (LoginForm)
+        register/page.tsx       # página de registro (RegisterForm)
       courses/
-        page.tsx              # 📋 catálogo de cursos
+        page.tsx                # catálogo de cursos (paginado, SSG/ISR)
+        loading.tsx             # loading state do catálogo
         [id]/
-          page.tsx            # 📋 detalhe do curso
+          page.tsx              # detalhe do curso (enrollment, lista de aulas)
+          loading.tsx           # loading state do detalhe
           lessons/
-            [lessonId]/page.tsx  # 📋 player de aula
+            [lessonId]/
+              page.tsx          # player de aula (YouTube embed + navegação)
+              loading.tsx       # loading state do player
       dashboard/
-        page.tsx              # ✅ dashboard do aluno
+        page.tsx                # dashboard do aluno (progresso + certificados)
+        loading.tsx             # loading state do dashboard
       admin/
+        layout.tsx              # layout admin (ProtectedRoute role=admin + Sidebar)
         courses/
-          page.tsx            # 📋 listagem admin
-          new/page.tsx        # 📋 criar curso
+          page.tsx              # listagem de todos os cursos (admin)
+          new/page.tsx          # criar curso (CourseForm)
           [id]/
-            edit/page.tsx     # 📋 editar curso
-            lessons/page.tsx  # 📋 gerenciar aulas
+            edit/page.tsx       # editar curso + publicar/despublicar/deletar
+            lessons/page.tsx    # gerenciar aulas (CRUD + drag-and-drop reorder)
       __tests__/
-        page.spec.tsx         # ✅ teste da homepage
+        page.spec.tsx           # teste da homepage
+        error.spec.tsx          # teste do error boundary
+        not-found.spec.tsx      # teste da página 404
     components/
-      ui/                     # componentes base
-        Button.tsx            # ✅
-        __tests__/
-          Button.spec.tsx     # ✅
-      layout/                 # ✅ barrel (Header, Footer, Sidebar — 📋)
-      course/                 # ✅ barrel (componentes de curso — 📋)
-      auth/                   # ✅ barrel (componentes de auth — 📋)
+      ui/                       # componentes base reutilizáveis
+        Badge.tsx               # badge de status (variantes de cor)
+        Button.tsx              # botão com variantes e loading state
+        Card.tsx                # container com shadow/border
+        EmptyState.tsx          # ícone + mensagem + CTA opcional
+        ErrorMessage.tsx        # mensagem de erro com requestId + retry
+        Input.tsx               # input com label, erro, forwarded ref
+        LoadingSpinner.tsx      # spinner animado (tamanhos configuráveis)
+        Modal.tsx               # overlay + close (ESC/click fora) + title
+        Pagination.tsx          # prev/next + page indicator
+        index.ts                # barrel export
+        __tests__/              # 9 test files (Badge, Button, Card, EmptyState, ErrorMessage, Input, LoadingSpinner, Modal, Pagination)
+      layout/                   # layout shell
+        Header.tsx              # logo, nav, user menu, hamburger mobile
+        Footer.tsx              # copyright + links
+        Sidebar.tsx             # menu admin (cursos, aulas) — colapsável mobile
+        index.ts                # barrel export
+        __tests__/              # 3 test files (Header, Footer, Sidebar)
+      auth/                     # componentes de autenticação
+        LoginForm.tsx           # react-hook-form + zod (email + password)
+        RegisterForm.tsx        # react-hook-form + zod (name + email + password + confirm)
+        ProtectedRoute.tsx      # client-side guard (requiredRole prop)
+        index.ts                # barrel export
+        __tests__/              # 3 test files (LoginForm, RegisterForm, ProtectedRoute)
+      course/                   # componentes de curso (learner)
+        CourseCard.tsx           # card com thumbnail, título, descrição, link
+        CourseList.tsx           # grid responsivo (1→2→3 colunas) + empty state
+        ProgressBar.tsx         # barra visual com porcentagem
+        EnrollButton.tsx        # botão de matrícula com loading state
+        LessonItem.tsx          # item de aula com status (✓/○) + link
+        LessonList.tsx          # lista ordenada por position
+        YouTubePlayer.tsx       # iframe embed responsivo (16:9)
+        index.ts                # barrel export
+        __tests__/              # 7 test files (CourseCard, CourseList, ProgressBar, EnrollButton, LessonItem, LessonList, YouTubePlayer)
+      dashboard/                # componentes do dashboard
+        DashboardCourseCard.tsx # card com ProgressBar + link continuar
+        CertificateCard.tsx     # código + curso + data formatada
+        DashboardStats.tsx      # cards de resumo numérico
+        index.ts                # barrel export
+        __tests__/              # 3 test files (DashboardCourseCard, CertificateCard, DashboardStats)
+      admin/                    # componentes do painel admin
+        AdminCourseCard.tsx     # row com title, Badge status, ações inline
+        ConfirmModal.tsx        # modal de confirmação para ações destrutivas
+        CourseForm.tsx          # react-hook-form + zod (title, description, thumbnailUrl)
+        LessonForm.tsx          # react-hook-form + zod (title, youtubeUrl, position)
+        LessonReorderList.tsx   # @dnd-kit/sortable (drag handle + keyboard)
+        index.ts                # barrel export
+        __tests__/              # 5 test files (AdminCourseCard, ConfirmModal, CourseForm, LessonForm, LessonReorderList)
     hooks/
-      use-auth.ts             # ✅ hook de autenticação
-      use-api.ts              # ✅ hook genérico de API
-    services/
-      api.ts                  # ✅ wrapper HTTP com token JWT
-      auth-service.ts         # ✅ login, register, logout
+      use-auth.tsx              # AuthProvider (Context API) + useAuth hook
+      use-api.ts                # hook genérico de API (loading, error, data)
       __tests__/
-        api.spec.ts           # ✅ testes do API client
+        use-auth.spec.tsx       # testes do AuthProvider
+    services/
+      api.ts                    # HTTP client (fetch wrapper, JWT Bearer, 401 global handler)
+      auth-service.ts           # login, register, logout, token management
+      course-service.ts         # listCourses (paginado), getCourse
+      enrollment-service.ts     # enrollInCourse, markLessonComplete
+      dashboard-service.ts      # getDashboard
+      certificate-service.ts    # generateCertificate
+      admin-course-service.ts   # listAll, create, update, publish, unpublish, delete, getAdminCourse
+      admin-lesson-service.ts   # addLesson, updateLesson, deleteLesson, reorderLessons
+      types/                    # tipos de response da API
+        course.ts               # Course, Lesson, PaginatedResponse
+        dashboard.ts            # DashboardResponse (inProgress, completed, certificates)
+        certificate.ts          # CertificateResponse
+      __tests__/                # 8 test files
+        api.spec.ts
+        api-401.spec.ts         # teste do 401 global handler
+        course-service.spec.ts
+        enrollment-service.spec.ts
+        dashboard-service.spec.ts
+        certificate-service.spec.ts
+        admin-course-service.spec.ts
+        admin-lesson-service.spec.ts
     lib/
-      utils.ts                # ✅ utilidades gerais
+      utils.ts                  # utilidades gerais
     styles/
-      .gitkeep                # ✅ placeholder
+      .gitkeep                  # placeholder
 ```
+
+**Total: 42 test files, 223 testes**
+
+### Padrões arquiteturais do frontend
+
+- **Auth state global**: React Context API via `AuthProvider` (token + user + isLoading)
+- **Proteção de rotas (server-side)**: Next.js `middleware.ts` redireciona para `/login` se sem token
+- **Proteção de rotas (client-side)**: `ProtectedRoute` component com prop `requiredRole`
+- **Token storage**: JWT em `localStorage`, sincronizado para cookie não-httpOnly (para middleware server-side)
+- **401 global handler**: `api.ts` registra callback via `setOnUnauthorized()` — auto-logout + redirect `/login`
+- **Rendering**: pages públicas (homepage, catálogo) usam Server Components; pages autenticadas usam `'use client'`
+- **Forms**: `react-hook-form` + `zod` + `@hookform/resolvers` em todos os formulários
+- **Services**: camada de abstração entre componentes e API — 1 service por domínio
 
 ### Regras
 - **Rendering híbrido**: SSR para páginas dinâmicas/autenticadas, SSG para conteúdo público estático.
