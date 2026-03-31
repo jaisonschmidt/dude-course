@@ -81,7 +81,7 @@ export class AdminCourseController {
 
     logger.info(
       { requestId: request.id, userId: request.user.id, courseId: course.id },
-      'admin.course.published',
+      'course.published',
     )
 
     return reply.status(200).send({ data, requestId: request.id })
@@ -106,7 +106,7 @@ export class AdminCourseController {
 
     logger.info(
       { requestId: request.id, userId: request.user.id, courseId: course.id },
-      'admin.course.unpublished',
+      'course.unpublished',
     )
 
     return reply.status(200).send({ data, requestId: request.id })

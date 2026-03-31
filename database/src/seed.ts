@@ -61,7 +61,7 @@ async function main() {
       courseId: publishedCourse.id,
       title: 'O que é TypeScript?',
       description: 'Introdução à linguagem e seus benefícios.',
-      youtubeUrl: 'https://www.youtube.com/watch?v=example1',
+      youtubeUrl: 'https://www.youtube.com/watch?v=zeCDuo74uzA',
       position: 1,
     },
   });
@@ -73,7 +73,7 @@ async function main() {
       courseId: publishedCourse.id,
       title: 'Tipos básicos',
       description: 'string, number, boolean, arrays e objetos.',
-      youtubeUrl: 'https://www.youtube.com/watch?v=example2',
+      youtubeUrl: 'https://www.youtube.com/watch?v=ahCwqrYpIuM',
       position: 2,
     },
   });
@@ -85,7 +85,7 @@ async function main() {
       courseId: publishedCourse.id,
       title: 'Interfaces e Types',
       description: 'Modelando dados com interfaces e type aliases.',
-      youtubeUrl: 'https://www.youtube.com/watch?v=example3',
+      youtubeUrl: 'https://www.youtube.com/watch?v=crjIq7LEAYw',
       position: 3,
     },
   });
