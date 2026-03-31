@@ -128,6 +128,41 @@ pnpm db:seed
 
 > ⚠️ **`migrate dev` é exclusivo de desenvolvimento local.** Nunca use este comando em CI, staging ou produção — ele pode resetar dados. Em todos os outros ambientes, use `prisma migrate deploy`.
 
+---
+
+## 🌱 Dados do Seed
+
+O comando `db:seed` popula o banco com dados mínimos para desenvolvimento. Todos os dados são inseridos com `upsert`, portanto o seed é **idempotente** — pode ser rodado múltiplas vezes sem duplicar dados.
+
+### Usuários criados
+
+| Email | Senha | Role | Descrição |
+|-------|-------|------|----------|
+| `admin@dudecourse.local` | `Admin@123456` | `admin` | Usuário administrador com acesso ao painel admin |
+| `learner@dudecourse.local` | `Learner@123456` | `learner` | Aluno de teste com matrícula e progresso |
+
+### Cursos criados
+
+| ID | Título | Status | Aulas |
+|----|--------|--------|-------|
+| 1 | Introdução ao TypeScript | `published` | 3 aulas |
+| 2 | Node.js Avançado (Em breve) | `draft` | 0 aulas |
+
+### Aulas do curso "Introdução ao TypeScript"
+
+| Posição | Título | YouTube URL |
+|---------|--------|-------------|
+| 1 | O que é TypeScript? | `youtube.com/watch?v=zeCDuo74uzA` |
+| 2 | Tipos básicos | `youtube.com/watch?v=ahCwqrYpIuM` |
+| 3 | Interfaces e Types | `youtube.com/watch?v=crjIq7LEAYw` |
+
+### Dados de progresso
+
+- O `learner` está matriculado no curso 1
+- A aula 1 ("O que é TypeScript?") está marcada como concluída (progresso: 33%)
+
+---
+
 ### Banco de testes isolado (para rodar `integration-tests/` localmente)
 
 Os testes de integração usam um banco separado para não contaminar dados de desenvolvimento. Crie-o uma única vez:
@@ -166,10 +201,63 @@ Frontend disponível em `http://localhost:3000`.
 
 ---
 
-## ✅ Verificar
+## ✅ Verificação pós-setup
 
-- Backend health: `http://localhost:3001/health`
-- Frontend: `http://localhost:3000`
+Após completar todos os passos anteriores, verifique que tudo está funcionando:
+
+### Checklist rápido
+
+- [ ] **Backend health**: acesse http://localhost:3001/health — deve retornar `{ "status": "ok" }`
+- [ ] **Frontend**: acesse http://localhost:3000 — deve exibir a homepage com o curso "Introdução ao TypeScript"
+- [ ] **Login como admin**: acesse http://localhost:3000/login → `admin@dudecourse.local` / `Admin@123456`
+- [ ] **Painel admin**: após login admin, acesse http://localhost:3000/admin/courses — deve listar cursos
+- [ ] **Login como aluno**: faça logout e logue com `learner@dudecourse.local` / `Learner@123456`
+- [ ] **Dashboard**: acesse http://localhost:3000/dashboard — deve mostrar o curso matriculado com 33% de progresso
+- [ ] **Swagger UI**: acesse http://localhost:3001/documentation — interface interativa da API
+
+### Swagger UI (documentação interativa da API)
+
+Disponível **apenas** em `NODE_ENV=development` ou `staging`.
+
+| URL | Descrição |
+|-----|----------|
+| http://localhost:3001/documentation | Interface Swagger UI |
+| http://localhost:3001/documentation/json | OpenAPI 3.x spec em JSON |
+
+Para testar endpoints protegidos:
+1. Execute `POST /api/v1/auth/login` com `{ "email": "admin@dudecourse.local", "password": "Admin@123456" }`
+2. Copie o `accessToken` da resposta
+3. Clique no botão **Authorize** (🔓) no topo da página
+4. Informe: `Bearer <seu_token>`
+5. Agora todos os endpoints protegidos podem ser testados diretamente
+
+---
+
+## 🧪 Rodar testes
+
+### Testes unitários do backend
+
+```bash
+pnpm --filter backend test            # rodar todos
+pnpm --filter backend test:watch       # modo watch
+pnpm --filter backend test:coverage    # com relatório de cobertura
+```
+
+### Testes do frontend
+
+```bash
+pnpm --filter frontend test            # rodar todos (42 arquivos, 223 testes)
+pnpm --filter frontend test:watch      # modo watch
+pnpm --filter frontend test:coverage   # com relatório de cobertura
+```
+
+### Todos os testes do monorepo
+
+```bash
+pnpm test
+```
+
+> Isso roda testes de todos os pacotes que possuem o script `test`.
 
 ---
 
@@ -188,7 +276,7 @@ O comando executa em sequência:
 ### O que isso previne?
 
 | Problema | Detecção | Exemplo |
-|----------|----------|---------|
+|----------|----------|----------|
 | Erro de compilação em qualquer pacote | `pnpm lint` (tsc --noEmit) | Import de símbolo inexistente em `integration-tests/` |
 | Teste unitário quebrando | `pnpm --filter backend test` | Mock desatualizado após refactor de service |
 | Type mismatch entre pacotes | `pnpm lint` em todos | DTO alterado no backend mas não no integration-tests |
@@ -267,7 +355,7 @@ pnpm --filter frontend lint
 ## 🐛 Troubleshooting
 
 | Problema | Solução |
-|----------|---------|
+|----------|----------|
 | Erro de conexão com MySQL | Verificar se MySQL/Docker está rodando e `DATABASE_URL` no `.env` |
 | Porta 3001 em uso | Alterar `PORT` no `backend/.env` ou `kill $(lsof -ti:3001)` |
 | Porta 3000 em uso | Parar outro processo Next.js ou alterar porta |
