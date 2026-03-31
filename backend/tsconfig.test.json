@@ -1,10 +1,12 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "rootDir": ".",
     "types": ["vitest/globals"],
     "skipLibCheck": true,
-    "strict": false
+    "strict": false,
+    "noEmit": true
   },
-  "include": ["test/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*", "test/**/*"],
+  "exclude": ["node_modules", "dist", "test/integration", "test/helpers/db.ts"]
 }
