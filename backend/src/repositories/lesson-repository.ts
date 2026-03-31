@@ -8,6 +8,7 @@ export interface ILessonRepository {
   findByCourseId(courseId: number): Promise<Lesson[]>
   update(id: number, data: Partial<CreateLessonData>): Promise<Lesson | null>
   delete(id: number): Promise<boolean>
+  updatePositions(updates: Array<{ id: number; position: number }>): Promise<void>
 }
 
 export class PrismaLessonRepository implements ILessonRepository {
@@ -82,6 +83,17 @@ export class PrismaLessonRepository implements ILessonRepository {
       }
       throw error
     }
+  }
+
+  async updatePositions(updates: Array<{ id: number; position: number }>): Promise<void> {
+    await prisma.$transaction(
+      updates.map((u) =>
+        prisma.lesson.update({
+          where: { id: u.id },
+          data: { position: u.position },
+        }),
+      ),
+    )
   }
 
   private mapToLesson(lesson: any): Lesson {
