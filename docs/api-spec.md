@@ -5,6 +5,8 @@
 
 Este documento especifica os **contratos da API** do projeto (REST/JSON).
 
+> 💡 **Interactive API Explorer**: Em ambientes de desenvolvimento e staging, uma Swagger UI interativa está disponível em `/documentation`. Veja `backend/README.md` para detalhes.
+
 Referências:
 - Visão geral: `README.md`
 - Arquitetura: `docs/architecture.md`
