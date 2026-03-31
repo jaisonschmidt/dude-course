@@ -117,6 +117,7 @@ Os seguintes eventos de domínio estão instrumentados no backend:
 | `admin.lesson.updated` | AdminLessonController | info | `requestId`, `userId`, `courseId`, `lessonId` |
 | `admin.lesson.deleted` | AdminLessonController | info | `requestId`, `userId`, `courseId`, `lessonId` |
 | `admin.lessons.reordered` | AdminLessonController | info | `requestId`, `userId`, `courseId` |
+| `dashboard.fetched` | DashboardController | info | `requestId`, `userId` |
 
 **Notas:**
 - `certificate.issued` fires only on **new** certificate creation, not on idempotent re-fetch
@@ -152,28 +153,52 @@ Todos erros devem seguir o formato definido em `docs/api-spec.md`:
 
 ## 🧪 Healthchecks
 
-### Endpoints recomendados
+### Endpoints implementados
 - `GET /health` → liveness (API está no ar)
 - `GET /ready` → readiness (dependências OK: DB)
 
-Resposta exemplo:
+Resposta de `/health` (200):
 
 ```json
 {
-  "status": "ok",
-  "service": "dude-course-api",
-  "version": "git_sha_or_semver",
-  "uptimeSeconds": 12345
+  "data": {
+    "status": "ok",
+    "uptime": 123.45,
+    "timestamp": "2026-03-31T17:14:00.000Z",
+    "version": "0.1.0",
+    "memoryUsedMb": 42
+  },
+  "requestId": "uuid"
 }
 ```
 
-Para readiness, incluir dependências:
+Resposta de `/ready` (200):
 
 ```json
 {
-  "status": "ok",
-  "dependencies": {
-    "database": "ok"
+  "data": {
+    "status": "ready",
+    "checks": {
+      "api": "ok",
+      "database": "ok"
+    }
+  },
+  "requestId": "uuid"
+}
+```
+
+Resposta de `/ready` (503):
+
+```json
+{
+  "error": {
+    "code": "SERVICE_UNAVAILABLE",
+    "message": "One or more dependencies are not ready",
+    "details": {
+      "api": "ok",
+      "database": "error"
+    },
+    "requestId": "uuid"
   }
 }
 ```

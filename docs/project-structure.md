@@ -83,8 +83,11 @@ dude-course/
 backend/
   package.json
   tsconfig.json
+  vitest.config.ts
   src/
     models/                   # entidades de domínio e tipos
+      index.ts                # re-exports
+      errors.ts               # NotFoundError, BadRequestError, ConflictError
       user.ts
       course.ts
       lesson.ts
@@ -93,43 +96,52 @@ backend/
       certificate.ts
     services/                 # lógica de negócio
       auth-service.ts
-      course-service.ts
-      lesson-service.ts
+      course-service.ts         # listagem pública de cursos
+      admin-course-service.ts   # CRUD admin de cursos
+      admin-lesson-service.ts   # CRUD admin de aulas + reorder
       enrollment-service.ts
-      progress-service.ts
+      lesson-progress-service.ts
+      dashboard-service.ts
       certificate-service.ts
     controllers/              # handlers HTTP
       auth-controller.ts
-      course-controller.ts
-      lesson-controller.ts
+      course-controller.ts      # listagem pública
+      admin-course-controller.ts # CRUD admin cursos
+      admin-lesson-controller.ts # CRUD admin aulas
       enrollment-controller.ts
-      progress-controller.ts
+      lesson-progress-controller.ts
+      dashboard-controller.ts
       certificate-controller.ts
     repositories/             # acesso a dados (Prisma)
       user-repository.ts
       course-repository.ts
       lesson-repository.ts
       enrollment-repository.ts
-      progress-repository.ts
+      lesson-progress-repository.ts
       certificate-repository.ts
     routes/                   # definições de rotas Fastify
+      index.ts                # composition root — registra todas as rotas
       auth-routes.ts
       course-routes.ts
-      lesson-routes.ts
+      admin-course-routes.ts
+      admin-lesson-routes.ts
       enrollment-routes.ts
-      progress-routes.ts
+      lesson-progress-routes.ts
+      dashboard-routes.ts
       certificate-routes.ts
-      index.ts                # registra todas as rotas
-    middlewares/               # auth, requestId, error handling
-      auth.ts
+    middlewares/               # auth, guards, error handling
+      auth.ts                 # JWT verification middleware
+      admin-guard.ts          # role-based access (admin only)
       error-handler.ts
       not-found.ts
     dto/                      # schemas Zod e tipos request/response
       auth-dto.ts
       course-dto.ts
-      lesson-dto.ts
+      admin-course-dto.ts
+      admin-lesson-dto.ts
       enrollment-dto.ts
-      progress-dto.ts
+      lesson-progress-dto.ts
+      dashboard-dto.ts
       certificate-dto.ts
     plugins/                  # plugins Fastify
       request-id.ts
@@ -138,11 +150,38 @@ backend/
       env.ts
     utils/                    # logger, helpers
       logger.ts
+      prisma-errors.ts        # helper para tratar erros Prisma (RecordNotFound)
     server.ts                 # bootstrap do Fastify
   test/
+    setup.ts                  # Vitest global setup
+    helpers/
+      fastify-mocks.ts        # mock helpers para testes de controllers
     unit/
-      services/              # testes unitários de services
-      models/                # testes unitários de models
+      config/
+        env.spec.ts
+      controllers/            # testes unitários de controllers
+        auth-controller.spec.ts
+        course-controller.spec.ts
+        admin-course-controller.spec.ts
+        admin-lesson-controller.spec.ts
+        enrollment-controller.spec.ts
+        lesson-progress-controller.spec.ts
+        dashboard-controller.spec.ts
+        certificate-controller.spec.ts
+      services/               # testes unitários de services
+        auth-service.spec.ts
+        course-service.spec.ts
+        admin-course-service.spec.ts
+        admin-lesson-service.spec.ts
+        enrollment-service.spec.ts
+        lesson-progress-service.spec.ts
+        dashboard-service.spec.ts
+        certificate-service.spec.ts
+      middlewares/             # testes unitários de middlewares
+        auth.spec.ts
+        admin-guard.spec.ts
+        error-handler.spec.ts
+      server.spec.ts
 ```
 
 ### Regras MVC
@@ -182,25 +221,30 @@ database/
 ```
 integration-tests/
   package.json
-  vitest.config.ts
+  vitest.config.ts              # fileParallelism: false (DB compartilhado)
   test/
-    api/                      # testes de rotas com DB real
-      auth.test.ts
-      courses.test.ts
-      enrollments.test.ts
-      progress.test.ts
-      certificates.test.ts
-    repositories/             # testes de repositories
+    health.spec.ts              # GET /health, GET /ready
+    observability.spec.ts       # requestId propagation, X-Request-Id
+    api/                        # testes de rotas com DB real
+      auth.spec.ts
+      courses.spec.ts
+      admin-courses.spec.ts
+      admin-lessons.spec.ts
+      enrollments.spec.ts
+      lesson-progress.spec.ts
+      dashboard.spec.ts
+      certificate.spec.ts
+    repositories/               # testes de repositories
   helpers/
-    setup.ts                  # setup/teardown do DB de teste
-    fixtures.ts               # dados de teste
-    api-client.ts             # helper para chamadas HTTP
+    db.ts                       # Prisma test client, truncateAll, seed helpers
+    request.ts                  # HTTP helper (get, post, put, patch, del)
 ```
 
 ### Regras
-- Testes de integração usam **banco real** (MySQL de teste).
+- Testes de integração usam **banco real** (MySQL de teste: `dude_course_test`).
 - Testes de API sobem o servidor Fastify e fazem requests HTTP reais.
 - Setup e teardown garantem isolamento entre testes.
+- `fileParallelism: false` — arquivos executam sequencialmente para evitar race conditions no DB.
 
 ---
 
@@ -208,53 +252,60 @@ integration-tests/
 
 ### Estrutura de pastas
 
+> Legenda: ✅ Implementado | 📋 Planejado
+
 ```
 frontend/
   package.json
   tsconfig.json
+  vitest.config.ts
   next.config.ts
   tailwind.config.ts
   src/
     app/                      # Next.js App Router
-      layout.tsx              # root layout
-      page.tsx                # homepage
+      layout.tsx              # ✅ root layout
+      page.tsx                # ✅ homepage
+      globals.css             # ✅ estilos globais
       (auth)/
-        login/page.tsx
-        register/page.tsx
+        login/page.tsx        # ✅ página de login
+        register/page.tsx     # ✅ página de registro
       courses/
-        page.tsx              # catálogo de cursos
+        page.tsx              # 📋 catálogo de cursos
         [id]/
-          page.tsx            # detalhe do curso
+          page.tsx            # 📋 detalhe do curso
           lessons/
-            [lessonId]/page.tsx
+            [lessonId]/page.tsx  # 📋 player de aula
       dashboard/
-        page.tsx              # dashboard do aluno
+        page.tsx              # ✅ dashboard do aluno
       admin/
         courses/
-          page.tsx            # listagem admin
-          new/page.tsx        # criar curso
+          page.tsx            # 📋 listagem admin
+          new/page.tsx        # 📋 criar curso
           [id]/
-            edit/page.tsx     # editar curso
-            lessons/page.tsx  # gerenciar aulas
+            edit/page.tsx     # 📋 editar curso
+            lessons/page.tsx  # 📋 gerenciar aulas
+      __tests__/
+        page.spec.tsx         # ✅ teste da homepage
     components/
-      ui/                     # componentes base (Button, Input, Card, Badge)
-      layout/                 # Header, Footer, Sidebar
-      course/                 # componentes específicos de curso
-      auth/                   # componentes de autenticação
+      ui/                     # componentes base
+        Button.tsx            # ✅
+        __tests__/
+          Button.spec.tsx     # ✅
+      layout/                 # ✅ barrel (Header, Footer, Sidebar — 📋)
+      course/                 # ✅ barrel (componentes de curso — 📋)
+      auth/                   # ✅ barrel (componentes de auth — 📋)
     hooks/
-      use-auth.ts             # hook de autenticação
-      use-api.ts              # hook genérico de API
+      use-auth.ts             # ✅ hook de autenticação
+      use-api.ts              # ✅ hook genérico de API
     services/
-      api-client.ts           # wrapper HTTP com token JWT
-      auth.ts                 # login, register, logout
-      courses.ts              # operações de cursos
-      enrollments.ts          # matrículas
-      progress.ts             # progresso
-      certificates.ts         # certificados
+      api.ts                  # ✅ wrapper HTTP com token JWT
+      auth-service.ts         # ✅ login, register, logout
+      __tests__/
+        api.spec.ts           # ✅ testes do API client
     lib/
-      utils.ts                # utilidades gerais
+      utils.ts                # ✅ utilidades gerais
     styles/
-      globals.css
+      .gitkeep                # ✅ placeholder
 ```
 
 ### Regras
