@@ -15,6 +15,7 @@ import {
   logout as authLogout,
   getStoredToken,
 } from '@/services/auth-service'
+import { setOnUnauthorized } from '@/services/api'
 import type { LoginResponse, UserInfo } from '@/services/auth-service'
 
 interface AuthContextValue {
@@ -80,6 +81,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     authLogout()
     localStorage.removeItem(USER_KEY)
   }, [])
+
+  // Register global 401 handler so API calls auto-redirect on token expiry
+  useEffect(() => {
+    setOnUnauthorized(handleUnauthorized)
+    return () => setOnUnauthorized(null)
+  }, [handleUnauthorized])
 
   // Auto-logout when token expires
   useEffect(() => {

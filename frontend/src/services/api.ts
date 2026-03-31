@@ -35,6 +35,17 @@ function getToken(): string | null {
   return localStorage.getItem('auth_token')
 }
 
+/** Global handler for 401 responses (token expired / invalid). */
+let onUnauthorizedHandler: (() => void) | null = null
+
+/**
+ * Register a global handler to be called when API returns 401.
+ * Used by AuthProvider to auto-logout + redirect.
+ */
+export function setOnUnauthorized(handler: (() => void) | null): void {
+  onUnauthorizedHandler = handler
+}
+
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   body?: unknown
 }
@@ -74,6 +85,11 @@ export async function apiRequest<T = unknown>(
     const err = errorBody.error
     const code = err?.code ?? httpStatusToCode(response.status)
     const message = err?.message ?? httpStatusToMessage(response.status)
+
+    // Auto-handle 401: notify global handler for token expiry
+    if (response.status === 401 && onUnauthorizedHandler) {
+      onUnauthorizedHandler()
+    }
 
     throw new AppError(code, message, requestId, err?.details)
   }
