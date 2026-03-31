@@ -46,18 +46,30 @@ Referências:
 - No MVP (JWT stateless), logout é client-side (remover token).
 - Se blacklist/rotation for necessária, introduzir store (ex.: Redis) e documentar.
 
+### Frontend Token Handling (implementado)
+- **Storage**: JWT armazenado em `localStorage` (key: `auth_token`).
+- **Cookie sync**: token é copiado para cookie não-httpOnly (`auth-token`) para que o Next.js middleware (server-side) possa verificar autenticação sem JavaScript.
+- **Rehydration**: ao montar, `AuthProvider` lê token do `localStorage`, verifica expiração (decode JWT `exp`), e restaura estado sem flash de tela de login.
+- **Auto-logout em 401**: `api.ts` registra um callback global via `setOnUnauthorized()`. Quando qualquer API call retorna 401, o callback limpa token + user do state e localStorage, e redireciona para `/login`.
+- **Prevenção de loops**: o handler de 401 só dispara uma vez (limpa o callback após execução).
+- **Proteção server-side**: `middleware.ts` do Next.js intercepta rotas protegidas (`/dashboard/**`, `/admin/**`) e redireciona para `/login` se o cookie `auth-token` estiver ausente.
+- **Proteção client-side**: componente `ProtectedRoute` verifica `isAuthenticated` e `user.role` — redireciona ou exibe "Acesso negado".
+
 ---
 
 ## 🛂 Autorização (Access Control)
 
 ### Regras mínimas
 - Usuário só acessa dados do **próprio** contexto.
-- Endpoints atuais são “user scoped”.
-- Admin endpoints (futuro) devem exigir RBAC.
+- Endpoints de learner são "user scoped" — verificar ownership.
+- Endpoints admin exigem `role: admin`.
 
-### Admin (futuro)
-- Introduzir `role` no usuário (ex.: `user`, `admin`) **somente quando necessário**.
-- Documentar RBAC em `docs/domain.md` e `docs/api-spec.md`.
+### Admin (implementado)
+- Campo `role` no model User: valores `learner` (default) e `admin`.
+- JWT payload inclui `role` — verificado no middleware `admin-guard.ts`.
+- 9 endpoints admin protegidos (CRUD cursos + CRUD aulas) → `403 FORBIDDEN` para learners.
+- Contratos documentados em `docs/api-spec.md` (seção Admin).
+- Regras de publicação documentadas em `docs/domain.md`.
 
 ---
 

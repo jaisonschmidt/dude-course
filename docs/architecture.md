@@ -156,34 +156,52 @@ dude-course/
 
 ```
 frontend/src/
+  middleware.ts               # proteção de rotas server-side (cookie check)
   app/
-    layout.tsx              # root layout
-    page.tsx                # homepage
-    (auth)/
-      login/page.tsx
-      register/page.tsx
-    courses/
-      page.tsx              # catálogo
-      [id]/page.tsx         # detalhe do curso
-    dashboard/
-      page.tsx              # dashboard do aluno
-    admin/
-      courses/
-        page.tsx            # gestão de cursos
+    layout.tsx                # root layout (providers + shell)
+    providers.tsx             # AuthProvider wrapper
+    layout-shell.tsx          # Header + Footer wrapper
+    page.tsx                  # homepage (hero + cursos em destaque)
+    error.tsx                 # error boundary global
+    not-found.tsx             # página 404 customizada
+    (auth)/login, register/   # páginas de autenticação
+    courses/                  # catálogo + detalhe + player de aula
+    dashboard/                # dashboard do aluno
+    admin/                    # painel administrativo (layout próprio com Sidebar)
   components/
-    ui/                     # componentes base (Button, Input, Card)
-    layout/                 # Header, Footer, Sidebar
-    course/                 # componentes de curso
+    ui/                       # componentes base (Button, Input, Card, Modal, Badge, etc.)
+    layout/                   # Header, Footer, Sidebar
+    auth/                     # LoginForm, RegisterForm, ProtectedRoute
+    course/                   # CourseCard, LessonItem, YouTubePlayer, ProgressBar, etc.
+    dashboard/                # DashboardCourseCard, CertificateCard, DashboardStats
+    admin/                    # CourseForm, LessonForm, LessonReorderList, ConfirmModal, etc.
   hooks/
-    use-auth.ts
-    use-api.ts
+    use-auth.tsx              # AuthProvider (Context API) + useAuth hook
+    use-api.ts                # hook genérico de API
   services/
-    api-client.ts           # wrapper HTTP com token
-    auth.ts                 # login, register, token management
-    courses.ts              # CRUD de cursos
+    api.ts                    # HTTP client (fetch, JWT Bearer, 401 global handler)
+    auth-service.ts           # login, register, logout, token management
+    course-service.ts         # listCourses, getCourse
+    enrollment-service.ts     # enrollInCourse, markLessonComplete
+    dashboard-service.ts      # getDashboard
+    certificate-service.ts    # generateCertificate
+    admin-course-service.ts   # CRUD admin de cursos
+    admin-lesson-service.ts   # CRUD admin de aulas + reorder
+    types/                    # tipos de response (course, dashboard, certificate)
   styles/
     globals.css
 ```
+
+### Padrões arquiteturais do frontend
+
+- **Auth state global**: React Context API via `AuthProvider` — estado: `user`, `token`, `isLoading`, `isAuthenticated`
+- **Proteção de rotas**: dupla camada — `middleware.ts` (server-side, cookie) + `ProtectedRoute` (client-side, role check)
+- **Token handling**: JWT em `localStorage`, sincronizado para cookie não-httpOnly. Auto-logout global em 401.
+- **Services layer**: 1 service por domínio, abstrai chamadas HTTP. Componentes nunca chamam `fetch` diretamente.
+- **Forms**: `react-hook-form` + `zod` + `@hookform/resolvers` para validação tipada
+- **Drag-and-drop**: `@dnd-kit/sortable` para reordenação de aulas (admin), com suporte a teclado
+- **Rendering**: Server Components para páginas públicas (SSG/ISR), `'use client'` para interatividade
+- **Error handling**: `error.tsx` (boundary global), `not-found.tsx` (404), `loading.tsx` por rota
 
 ---
 
@@ -227,5 +245,7 @@ Possíveis melhorias futuras (quando necessidade aparecer):
 - cache (Redis) para leituras intensas
 - processamento assíncrono (filas) para operações pesadas
 - refresh tokens para sessões mais longas
-- RBAC granular para admin
+- RBAC granular além de `learner`/`admin` (permissões por recurso)
 - rate limiting para endpoints de auth
+- `next/image` para otimização de thumbnails
+- lazy loading do YouTubePlayer (dynamic import / intersection observer)

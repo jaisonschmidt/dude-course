@@ -31,8 +31,14 @@ Backend
 - Prisma ORM + MySQL 8.0
 
 Frontend
-- Next.js (App Router) + TypeScript
-- Hybrid rendering (SSR + SSG)
+- Next.js 15 (App Router) + TypeScript
+- React 19
+- Tailwind CSS (utility-first styling)
+- Hybrid rendering (SSR + SSG/ISR)
+- react-hook-form + zod + @hookform/resolvers (form validation)
+- @dnd-kit/core + @dnd-kit/sortable (drag-and-drop, admin lesson reorder)
+- React Context API (auth state management)
+- Vitest + Testing Library + user-event (223 tests, 42 test files)
 
 Database
 - MySQL 8.0
@@ -260,6 +266,21 @@ Preferred workflow:
 - ADR-0005: Database Migration Strategy (`docs/adr/0005-database-environments.md`)
 - ADR-0006: CI/CD Workflow Segmentation (`docs/adr/0006-cicd-workflow-segmentation.md`)
 - ADR-0007: TDD Testing Strategy (`docs/adr/0007-tdd-testing-strategy.md`)
+- ADR-0008: Swagger/OpenAPI (`docs/adr/0008-swagger-openapi.md`)
+- ADR-0009: Frontend Components In-App (`docs/adr/0009-frontend-components-in-app.md`)
+
+---
+
+# Frontend Architecture Patterns
+
+- Auth state: React Context API (AuthProvider + useAuth hook)
+- Route protection: Next.js middleware (server-side) + ProtectedRoute component (client-side)
+- Token: JWT in localStorage, synced to non-httpOnly cookie for middleware
+- 401 handling: global callback in api.ts → auto-logout + redirect /login
+- Services: 1 service per domain, abstracts API calls (components never call fetch directly)
+- Forms: react-hook-form + zod (note: zod v4 requires z.number() with valueAsNumber, not z.coerce.number())
+- Error handling: error.tsx (global boundary), not-found.tsx (404), loading.tsx per route
+- Admin: layout with ProtectedRoute(requiredRole="admin") + Sidebar, @dnd-kit for lesson reorder
 
 ---
 
