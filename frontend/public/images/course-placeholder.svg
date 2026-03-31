@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" fill="none">
+  <rect width="400" height="225" fill="#F3F4F6"/>
+  <path d="M180 90h40v45h-40z" fill="#D1D5DB"/>
+  <path d="M190 100h20v5h-20zM190 110h20v5h-20zM190 120h15v5h-15z" fill="#9CA3AF"/>
+  <circle cx="200" cy="75" r="15" fill="#D1D5DB"/>
+  <text x="200" y="160" text-anchor="middle" fill="#9CA3AF" font-size="14" font-family="system-ui">Sem thumbnail</text>
+</svg>
