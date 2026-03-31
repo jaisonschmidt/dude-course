@@ -12,9 +12,13 @@
  *   afterAll(teardownDb)
  */
 
-type TestPrisma = {
+type RawClient = {
   $queryRaw: (query: TemplateStringsArray, ...values: unknown[]) => Promise<unknown>
   $executeRaw: (query: TemplateStringsArray, ...values: unknown[]) => Promise<unknown>
+}
+
+type TestPrisma = RawClient & {
+  $transaction: <T>(fn: (tx: RawClient) => Promise<T>) => Promise<T>
   $disconnect: () => Promise<void>
 }
 
@@ -101,16 +105,20 @@ export async function truncateAll(): Promise<void> {
   const client = await getOrCreateTestPrisma()
 
   try {
-    // Delete in FK-safe order: children before parents
+    // Disable FK checks to allow truncation in any order
+    await client.$executeRaw`SET FOREIGN_KEY_CHECKS = 0`
     await client.$executeRaw`DELETE FROM lesson_progress`
     await client.$executeRaw`DELETE FROM enrollments`
     await client.$executeRaw`DELETE FROM certificates`
     await client.$executeRaw`DELETE FROM lessons`
     await client.$executeRaw`DELETE FROM courses`
     await client.$executeRaw`DELETE FROM users`
+    await client.$executeRaw`SET FOREIGN_KEY_CHECKS = 1`
 
     console.info('[test] truncateAll: All tables cleaned')
   } catch (err) {
+    // Re-enable FK checks even on error
+    try { await client.$executeRaw`SET FOREIGN_KEY_CHECKS = 1` } catch { /* ignore */ }
     console.error('[test] truncateAll: Failed to clean tables', err)
     throw err
   }

@@ -118,7 +118,7 @@ async function del<T = unknown>(
 ): Promise<TestResponse<T>> {
   const res = await fetch(`${BASE_URL}${path}`, {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json', ...headers },
+    headers: { ...headers },
   })
   let body: T
   if (res.status === 204) {
@@ -206,13 +206,14 @@ async function seedCourse(overrides: {
   const thumbnailUrl = overrides.thumbnailUrl ?? null
   const status = overrides.status ?? 'draft'
 
-  await prisma.$executeRaw`
-    INSERT INTO courses (title, description, thumbnail_url, status, created_at, updated_at)
-    VALUES (${title}, ${description}, ${thumbnailUrl}, ${status}, NOW(), NOW())
-  `
-
-  const rows = await prisma.$queryRaw`SELECT LAST_INSERT_ID() as id` as Array<{ id: bigint }>
-  return Number(rows[0]!.id)
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`
+      INSERT INTO courses (title, description, thumbnail_url, status, created_at, updated_at)
+      VALUES (${title}, ${description}, ${thumbnailUrl}, ${status}, NOW(), NOW())
+    `
+    const rows = await tx.$queryRaw`SELECT LAST_INSERT_ID() as id` as Array<{ id: bigint }>
+    return Number(rows[0]!.id)
+  })
 }
 
 /**
@@ -230,13 +231,14 @@ async function seedLesson(overrides: {
   const description = overrides.description ?? null
   const youtubeUrl = overrides.youtubeUrl ?? 'https://youtube.com/watch?v=test'
 
-  await prisma.$executeRaw`
-    INSERT INTO lessons (course_id, title, description, youtube_url, position, created_at, updated_at)
-    VALUES (${overrides.courseId}, ${title}, ${description}, ${youtubeUrl}, ${overrides.position}, NOW(), NOW())
-  `
-
-  const rows = await prisma.$queryRaw`SELECT LAST_INSERT_ID() as id` as Array<{ id: bigint }>
-  return Number(rows[0]!.id)
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`
+      INSERT INTO lessons (course_id, title, description, youtube_url, position, created_at, updated_at)
+      VALUES (${overrides.courseId}, ${title}, ${description}, ${youtubeUrl}, ${overrides.position}, NOW(), NOW())
+    `
+    const rows = await tx.$queryRaw`SELECT LAST_INSERT_ID() as id` as Array<{ id: bigint }>
+    return Number(rows[0]!.id)
+  })
 }
 
 // ── Tests ────────────────────────────────────────────────────

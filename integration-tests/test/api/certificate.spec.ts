@@ -43,24 +43,26 @@ interface LoginResponse {
 async function seedCourseWithLessons(lessonCount = 2): Promise<{ courseId: number; lessonIds: number[] }> {
   const prisma = getTestPrisma()
 
-  await prisma.$executeRaw`
-    INSERT INTO courses (title, description, status, created_at, updated_at)
-    VALUES ('Test Course', 'A test course', 'published', NOW(), NOW())
-  `
-  const courseRows = await prisma.$queryRaw`SELECT LAST_INSERT_ID() as id` as Array<{ id: bigint }>
-  const courseId = Number(courseRows[0]!.id)
-
-  const lessonIds: number[] = []
-  for (let i = 1; i <= lessonCount; i++) {
-    await prisma.$executeRaw`
-      INSERT INTO lessons (course_id, title, youtube_url, position, created_at, updated_at)
-      VALUES (${courseId}, ${`Lesson ${i}`}, ${`https://youtube.com/watch?v=test${i}`}, ${i}, NOW(), NOW())
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`
+      INSERT INTO courses (title, description, status, created_at, updated_at)
+      VALUES ('Test Course', 'A test course', 'published', NOW(), NOW())
     `
-    const lessonRows = await prisma.$queryRaw`SELECT LAST_INSERT_ID() as id` as Array<{ id: bigint }>
-    lessonIds.push(Number(lessonRows[0]!.id))
-  }
+    const courseRows = await tx.$queryRaw`SELECT LAST_INSERT_ID() as id` as Array<{ id: bigint }>
+    const courseId = Number(courseRows[0]!.id)
 
-  return { courseId, lessonIds }
+    const lessonIds: number[] = []
+    for (let i = 1; i <= lessonCount; i++) {
+      await tx.$executeRaw`
+        INSERT INTO lessons (course_id, title, youtube_url, position, created_at, updated_at)
+        VALUES (${courseId}, ${`Lesson ${i}`}, ${`https://youtube.com/watch?v=test${i}`}, ${i}, NOW(), NOW())
+      `
+      const lessonRows = await tx.$queryRaw`SELECT LAST_INSERT_ID() as id` as Array<{ id: bigint }>
+      lessonIds.push(Number(lessonRows[0]!.id))
+    }
+
+    return { courseId, lessonIds }
+  })
 }
 
 async function registerAndLogin(

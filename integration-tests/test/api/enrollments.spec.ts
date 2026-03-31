@@ -57,13 +57,14 @@ async function seedCourse(overrides: {
   const description = overrides.description ?? 'A test course'
   const status = overrides.status ?? 'published'
 
-  await prisma.$executeRaw`
-    INSERT INTO courses (title, description, status, created_at, updated_at)
-    VALUES (${title}, ${description}, ${status}, NOW(), NOW())
-  `
-
-  const rows = await prisma.$queryRaw`SELECT LAST_INSERT_ID() as id` as Array<{ id: bigint }>
-  return Number(rows[0]!.id)
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`
+      INSERT INTO courses (title, description, status, created_at, updated_at)
+      VALUES (${title}, ${description}, ${status}, NOW(), NOW())
+    `
+    const rows = await tx.$queryRaw`SELECT LAST_INSERT_ID() as id` as Array<{ id: bigint }>
+    return Number(rows[0]!.id)
+  })
 }
 
 /**
