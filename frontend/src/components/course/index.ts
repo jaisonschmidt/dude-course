@@ -1,3 +1,7 @@
 export { CourseCard } from './CourseCard'
 export { CourseList } from './CourseList'
 export { ProgressBar } from './ProgressBar'
+export { LessonItem } from './LessonItem'
+export { LessonList } from './LessonList'
+export { EnrollButton } from './EnrollButton'
+export { YouTubePlayer } from './YouTubePlayer'
