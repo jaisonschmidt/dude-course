@@ -36,6 +36,7 @@ function createMockLessonRepository(): ILessonRepository {
     findByCourseId: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
+    updatePositions: vi.fn(),
   }
 }
 
