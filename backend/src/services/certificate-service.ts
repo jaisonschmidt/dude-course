@@ -11,6 +11,7 @@ export interface CertificateResult {
   certificate: Certificate
   courseName: string
   learnerName: string
+  isNew: boolean
 }
 
 export class CertificateService {
@@ -38,7 +39,7 @@ export class CertificateService {
     const existing = await this.certificateRepository.findByUserAndCourse(userId, courseId)
 
     if (existing) {
-      return this.enrichCertificate(existing, userId, courseId)
+      return this.enrichCertificate(existing, userId, courseId, false)
     }
 
     // 4. Generate new certificate — catch TOCTOU race condition
@@ -56,19 +57,20 @@ export class CertificateService {
           courseId,
         )
         if (raceCertificate) {
-          return this.enrichCertificate(raceCertificate, userId, courseId)
+          return this.enrichCertificate(raceCertificate, userId, courseId, false)
         }
       }
       throw error
     }
 
-    return this.enrichCertificate(certificate, userId, courseId)
+    return this.enrichCertificate(certificate, userId, courseId, true)
   }
 
   private async enrichCertificate(
     certificate: Certificate,
     userId: number,
     courseId: number,
+    isNew: boolean,
   ): Promise<CertificateResult> {
     const [course, user] = await Promise.all([
       this.courseRepository.findById(courseId),
@@ -79,6 +81,7 @@ export class CertificateService {
       certificate,
       courseName: course?.title ?? 'Unknown Course',
       learnerName: user?.name ?? 'Unknown User',
+      isNew,
     }
   }
 }

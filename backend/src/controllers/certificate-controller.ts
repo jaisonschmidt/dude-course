@@ -32,10 +32,12 @@ export class CertificateController {
       learnerName: result.learnerName,
     }
 
-    logger.info(
-      { requestId: request.id, userId, courseId: params.id },
-      'certificate.generated',
-    )
+    if (result.isNew) {
+      logger.info(
+        { requestId: request.id, userId, courseId: params.id, certificateCode: result.certificate.certificateCode },
+        'certificate.issued',
+      )
+    }
 
     return reply.status(200).send({ data, requestId: request.id })
   }

@@ -131,6 +131,7 @@ describe('CertificateService', () => {
       expect(result.certificate.certificateCode).toBe('a1b2c3d4-e5f6-7890-abcd-ef1234567890')
       expect(result.courseName).toBe('TypeScript Mastery')
       expect(result.learnerName).toBe('Jane Doe')
+      expect(result.isNew).toBe(true)
       expect(certificateRepo.create).toHaveBeenCalledOnce()
     })
 
@@ -143,6 +144,7 @@ describe('CertificateService', () => {
       const result = await service.generateOrGet(42, 1)
 
       expect(result.certificate.certificateCode).toBe('a1b2c3d4-e5f6-7890-abcd-ef1234567890')
+      expect(result.isNew).toBe(false)
       expect(certificateRepo.create).not.toHaveBeenCalled()
     })
 

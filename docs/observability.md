@@ -95,6 +95,36 @@ Todo log deve tentar conter:
 
 ---
 
+## 📋 Domain Events Implementados
+
+Os seguintes eventos de domínio estão instrumentados no backend:
+
+| Evento | Localização | Nível | Campos |
+|--------|------------|-------|--------|
+| `user.registered` | AuthController | info | `requestId`, `userId` |
+| `user.login.success` | AuthController | info | `requestId`, `userId` |
+| `user.login.failure` | AuthController | warn | `requestId` |
+| `enrollment.created` | EnrollmentController | info | `requestId`, `userId`, `courseId` |
+| `lesson-progress.completed` | LessonProgressController | info | `requestId`, `userId`, `courseId`, `lessonId` |
+| `enrollment.completed` | LessonProgressController | info | `requestId`, `userId`, `courseId` |
+| `certificate.issued` | CertificateController | info | `requestId`, `userId`, `courseId`, `certificateCode` |
+| `course.published` | AdminCourseController | info | `requestId`, `userId`, `courseId` |
+| `course.unpublished` | AdminCourseController | info | `requestId`, `userId`, `courseId` |
+| `admin.course.created` | AdminCourseController | info | `requestId`, `userId`, `courseId` |
+| `admin.course.updated` | AdminCourseController | info | `requestId`, `userId`, `courseId` |
+| `admin.course.deleted` | AdminCourseController | info | `requestId`, `userId`, `courseId` |
+| `admin.lesson.created` | AdminLessonController | info | `requestId`, `userId`, `courseId`, `lessonId` |
+| `admin.lesson.updated` | AdminLessonController | info | `requestId`, `userId`, `courseId`, `lessonId` |
+| `admin.lesson.deleted` | AdminLessonController | info | `requestId`, `userId`, `courseId`, `lessonId` |
+| `admin.lessons.reordered` | AdminLessonController | info | `requestId`, `userId`, `courseId` |
+
+**Notas:**
+- `certificate.issued` fires only on **new** certificate creation, not on idempotent re-fetch
+- `user.login.failure` uses `warn` level (security-relevant)
+- No sensitive data (password, token, PII) is included in any log
+
+---
+
 ## ❗ Erros e exceções
 
 ### Padrão de resposta de erro
