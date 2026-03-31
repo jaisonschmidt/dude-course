@@ -34,3 +34,15 @@ export class NotFoundError extends AppError {
     super(message, 404)
   }
 }
+
+export class ForbiddenError extends AppError {
+  constructor(message = 'Forbidden') {
+    super(message, 403)
+  }
+}
+
+export class BadRequestError extends AppError {
+  constructor(message = 'Bad request') {
+    super(message, 400)
+  }
+}

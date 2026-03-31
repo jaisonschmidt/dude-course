@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken'
 import type { IUserRepository } from '../repositories/user-repository.js'
 import type { AuthUserResponseDto, LoginResponseDto } from '../dto/auth-dto.js'
 import { ConflictError, UnauthorizedError } from '../models/errors.js'
+import { isUniqueConstraintError } from '../utils/prisma-errors.js'
 import { env } from '../config/env.js'
 
 export interface RegisterInput {
@@ -29,17 +30,24 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(data.password, BCRYPT_ROUNDS)
 
-    const user = await this.userRepository.create({
-      name: data.name,
-      email: data.email,
-      passwordHash,
-    })
+    try {
+      const user = await this.userRepository.create({
+        name: data.name,
+        email: data.email,
+        passwordHash,
+      })
 
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      }
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        throw new ConflictError('Email already registered')
+      }
+      throw error
     }
   }
 

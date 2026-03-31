@@ -1,5 +1,6 @@
 import type { Certificate, CreateCertificateData } from '../models/certificate.js'
 import { prisma } from 'database'
+import { isRecordNotFoundError } from '../utils/prisma-errors.js'
 
 export interface ICertificateRepository {
   create(data: CreateCertificateData): Promise<Certificate>
@@ -66,8 +67,11 @@ export class PrismaCertificateRepository implements ICertificateRepository {
         where: { id },
       })
       return true
-    } catch {
-      return false
+    } catch (error) {
+      if (isRecordNotFoundError(error)) {
+        return false
+      }
+      throw error
     }
   }
 

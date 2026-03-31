@@ -1,5 +1,6 @@
 import type { Course, CreateCourseData, CourseStatus } from '../models/course.js'
 import { prisma } from 'database'
+import { isRecordNotFoundError } from '../utils/prisma-errors.js'
 
 export interface ICourseRepository {
   create(data: CreateCourseData): Promise<Course>
@@ -78,8 +79,11 @@ export class PrismaCourseRepository implements ICourseRepository {
       })
 
       return this.mapToCourse(course)
-    } catch {
-      return null
+    } catch (error) {
+      if (isRecordNotFoundError(error)) {
+        return null
+      }
+      throw error
     }
   }
 
@@ -89,8 +93,11 @@ export class PrismaCourseRepository implements ICourseRepository {
         where: { id },
       })
       return true
-    } catch {
-      return false
+    } catch (error) {
+      if (isRecordNotFoundError(error)) {
+        return false
+      }
+      throw error
     }
   }
 

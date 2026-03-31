@@ -1,5 +1,6 @@
 import type { LessonProgress, CreateLessonProgressData } from '../models/lesson-progress.js'
 import { prisma } from 'database'
+import { isRecordNotFoundError } from '../utils/prisma-errors.js'
 
 export interface ILessonProgressRepository {
   create(data: CreateLessonProgressData): Promise<LessonProgress>
@@ -62,8 +63,11 @@ export class PrismaLessonProgressRepository implements ILessonProgressRepository
         where: { id },
       })
       return true
-    } catch {
-      return false
+    } catch (error) {
+      if (isRecordNotFoundError(error)) {
+        return false
+      }
+      throw error
     }
   }
 

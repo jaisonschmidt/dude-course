@@ -9,7 +9,18 @@ export class EnrollmentController {
 
   async enroll(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     const params = EnrollmentCourseIdParamSchema.parse(request.params)
-    const userId = request.user!.id
+
+    if (!request.user) {
+      return reply.status(401).send({
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'Missing or invalid authentication token',
+          requestId: request.id,
+        },
+      })
+    }
+
+    const userId = request.user.id
 
     const result = await this.enrollmentService.enroll(userId, params.id)
 

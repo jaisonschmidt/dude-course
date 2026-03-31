@@ -1,5 +1,6 @@
 import type { Enrollment, CreateEnrollmentData } from '../models/enrollment.js'
 import { prisma } from 'database'
+import { isRecordNotFoundError } from '../utils/prisma-errors.js'
 
 export interface IEnrollmentRepository {
   create(data: CreateEnrollmentData): Promise<Enrollment>
@@ -64,8 +65,11 @@ export class PrismaEnrollmentRepository implements IEnrollmentRepository {
       })
 
       return this.mapToEnrollment(enrollment)
-    } catch {
-      return null
+    } catch (error) {
+      if (isRecordNotFoundError(error)) {
+        return null
+      }
+      throw error
     }
   }
 
@@ -75,8 +79,11 @@ export class PrismaEnrollmentRepository implements IEnrollmentRepository {
         where: { id },
       })
       return true
-    } catch {
-      return false
+    } catch (error) {
+      if (isRecordNotFoundError(error)) {
+        return false
+      }
+      throw error
     }
   }
 
