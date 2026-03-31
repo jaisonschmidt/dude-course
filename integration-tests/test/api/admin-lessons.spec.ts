@@ -132,7 +132,7 @@ async function del<T = unknown>(
 ): Promise<TestResponse<T>> {
   const res = await fetch(`${BASE_URL}${path}`, {
     method: 'DELETE',
-    headers: { 'Content-Type': 'application/json', ...headers },
+    headers: { ...headers },
   })
   let body: T
   if (res.status === 204) {
