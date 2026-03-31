@@ -18,8 +18,14 @@ vi.mock('jsonwebtoken', () => ({
   },
 }))
 
+// Mock prisma-errors utility
+vi.mock('../../../src/utils/prisma-errors.js', () => ({
+  isUniqueConstraintError: vi.fn(),
+}))
+
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import { isUniqueConstraintError } from '../../../src/utils/prisma-errors.js'
 
 function createMockUserRepository(): IUserRepository {
   return {
@@ -130,6 +136,44 @@ describe('AuthService', () => {
       expect(mockUserRepo.findByEmail).toHaveBeenCalledOnce()
       expect(bcrypt.hash).not.toHaveBeenCalled()
       expect(mockUserRepo.create).not.toHaveBeenCalled()
+    })
+
+    it('should throw ConflictError when concurrent registration hits unique constraint', async () => {
+      // Arrange
+      vi.mocked(mockUserRepo.findByEmail).mockResolvedValue(null)
+      vi.mocked(bcrypt.hash).mockResolvedValue('$2b$10$hashed' as never)
+
+      const uniqueError = new Error('Unique constraint failed')
+      vi.mocked(mockUserRepo.create).mockRejectedValue(uniqueError)
+      vi.mocked(isUniqueConstraintError).mockReturnValue(true)
+
+      // Act & Assert
+      await expect(
+        authService.register({
+          name: 'Test',
+          email: 'test@example.com',
+          password: 'securepassword',
+        }),
+      ).rejects.toThrow('Email already registered')
+    })
+
+    it('should rethrow non-unique-constraint errors from create', async () => {
+      // Arrange
+      vi.mocked(mockUserRepo.findByEmail).mockResolvedValue(null)
+      vi.mocked(bcrypt.hash).mockResolvedValue('$2b$10$hashed' as never)
+
+      const dbError = new Error('Connection refused')
+      vi.mocked(mockUserRepo.create).mockRejectedValue(dbError)
+      vi.mocked(isUniqueConstraintError).mockReturnValue(false)
+
+      // Act & Assert
+      await expect(
+        authService.register({
+          name: 'Test',
+          email: 'test@example.com',
+          password: 'securepassword',
+        }),
+      ).rejects.toThrow('Connection refused')
     })
   })
 

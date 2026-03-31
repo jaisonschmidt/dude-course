@@ -5,6 +5,12 @@ import type { ICourseRepository } from '../../../src/repositories/course-reposit
 import { createEnrollmentFactory, createCourseFactory } from '../../helpers/factories.js'
 import { NotFoundError } from '../../../src/models/errors.js'
 
+vi.mock('../../../src/utils/prisma-errors.js', () => ({
+  isUniqueConstraintError: vi.fn(),
+}))
+
+import { isUniqueConstraintError } from '../../../src/utils/prisma-errors.js'
+
 function createMockEnrollmentRepository(): IEnrollmentRepository {
   return {
     create: vi.fn(),
@@ -129,6 +135,43 @@ describe('EnrollmentService', () => {
       expect(mockCourseRepo.findById).toHaveBeenCalledOnce()
       expect(mockEnrollmentRepo.findByUserAndCourse).not.toHaveBeenCalled()
       expect(mockEnrollmentRepo.create).not.toHaveBeenCalled()
+    })
+
+    it('should handle race condition gracefully when concurrent create hits unique constraint', async () => {
+      // Arrange
+      const course = createCourseFactory({ id: 10, status: 'published' })
+      const existingEnrollment = createEnrollmentFactory({ id: 99, userId: 42, courseId: 10 })
+
+      vi.mocked(mockCourseRepo.findById).mockResolvedValue(course)
+      vi.mocked(mockEnrollmentRepo.findByUserAndCourse)
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(existingEnrollment)
+
+      const uniqueError = new Error('Unique constraint failed')
+      vi.mocked(mockEnrollmentRepo.create).mockRejectedValue(uniqueError)
+      vi.mocked(isUniqueConstraintError).mockReturnValue(true)
+
+      // Act
+      const result = await enrollmentService.enroll(42, 10)
+
+      // Assert
+      expect(result.enrollment).toEqual(existingEnrollment)
+      expect(result.created).toBe(false)
+    })
+
+    it('should rethrow non-unique-constraint errors from create', async () => {
+      // Arrange
+      const course = createCourseFactory({ id: 10, status: 'published' })
+
+      vi.mocked(mockCourseRepo.findById).mockResolvedValue(course)
+      vi.mocked(mockEnrollmentRepo.findByUserAndCourse).mockResolvedValue(null)
+
+      const dbError = new Error('Connection refused')
+      vi.mocked(mockEnrollmentRepo.create).mockRejectedValue(dbError)
+      vi.mocked(isUniqueConstraintError).mockReturnValue(false)
+
+      // Act & Assert
+      await expect(enrollmentService.enroll(42, 10)).rejects.toThrow('Connection refused')
     })
   })
 })

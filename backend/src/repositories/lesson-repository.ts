@@ -1,5 +1,6 @@
 import type { Lesson, CreateLessonData } from '../models/lesson.js'
 import { prisma } from 'database'
+import { isRecordNotFoundError } from '../utils/prisma-errors.js'
 
 export interface ILessonRepository {
   create(data: CreateLessonData): Promise<Lesson>
@@ -61,8 +62,11 @@ export class PrismaLessonRepository implements ILessonRepository {
       })
 
       return this.mapToLesson(lesson)
-    } catch {
-      return null
+    } catch (error) {
+      if (isRecordNotFoundError(error)) {
+        return null
+      }
+      throw error
     }
   }
 
@@ -72,8 +76,11 @@ export class PrismaLessonRepository implements ILessonRepository {
         where: { id },
       })
       return true
-    } catch {
-      return false
+    } catch (error) {
+      if (isRecordNotFoundError(error)) {
+        return false
+      }
+      throw error
     }
   }
 
