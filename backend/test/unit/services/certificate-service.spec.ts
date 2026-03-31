@@ -11,6 +11,7 @@ function createMockCertificateRepository(): ICertificateRepository {
     create: vi.fn(),
     findById: vi.fn(),
     findByUserAndCourse: vi.fn(),
+    findByUserId: vi.fn(),
     findByCertificateCode: vi.fn(),
     delete: vi.fn(),
   }
