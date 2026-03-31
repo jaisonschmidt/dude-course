@@ -1,3 +1,3 @@
-// TODO: Implementar componentes de layout
-// Exemplos: Header, Footer, Sidebar
-// Exportar os componentes aqui conforme forem criados
+export { Header } from './Header'
+export { Footer } from './Footer'
+export { Sidebar } from './Sidebar'
