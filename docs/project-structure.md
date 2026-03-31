@@ -146,11 +146,13 @@ backend/
     plugins/                  # plugins Fastify
       request-id.ts
       cors.ts
+      swagger.ts              # Swagger UI + OpenAPI (condicional: dev/staging/test only)
     config/                   # configuração centralizada
       env.ts
     utils/                    # logger, helpers
       logger.ts
       prisma-errors.ts        # helper para tratar erros Prisma (RecordNotFound)
+      zod-to-json-schema.ts   # Zod → JSON Schema (strip $schema for Fastify Ajv compatibility)
     server.ts                 # bootstrap do Fastify
   test/
     setup.ts                  # Vitest global setup

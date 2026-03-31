@@ -5,6 +5,7 @@ import { prisma } from 'database'
 import { env } from './config/env.js'
 import requestIdPlugin from './plugins/request-id.js'
 import corsPlugin from './plugins/cors.js'
+import swaggerPlugin from './plugins/swagger.js'
 import { registerErrorHandler } from './middlewares/error-handler.js'
 import { registerNotFoundHandler } from './middlewares/not-found.js'
 import { registerRoutes } from './routes/index.js'
@@ -27,6 +28,7 @@ export async function buildServer() {
 
   await app.register(requestIdPlugin)
   await app.register(corsPlugin)
+  await app.register(swaggerPlugin)
 
   registerErrorHandler(app)
   registerNotFoundHandler(app)
@@ -82,6 +84,9 @@ export async function buildServer() {
   })
 
   await registerRoutes(app)
+
+  // Generate OpenAPI spec after all routes are registered
+  await app.ready()
 
   return app
 }

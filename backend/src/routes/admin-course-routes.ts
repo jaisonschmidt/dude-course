@@ -2,6 +2,17 @@ import type { FastifyInstance } from 'fastify'
 import type { AdminCourseController } from '../controllers/admin-course-controller.js'
 import { authMiddleware } from '../middlewares/auth.js'
 import { adminGuardMiddleware } from '../middlewares/admin-guard.js'
+import {
+  AdminCourseIdParamSchema,
+  CreateCourseBodySchema,
+  UpdateCourseBodySchema,
+} from '../dto/admin-course-dto.js'
+import { zodToJsonSchema } from '../utils/zod-to-json-schema.js'
+import {
+  errorResponseSchema,
+  successResponse,
+  courseResponseSchema,
+} from '../dto/openapi-schemas.js'
 
 export async function adminCourseRoutes(
   app: FastifyInstance,
@@ -11,31 +22,109 @@ export async function adminCourseRoutes(
 
   app.post(
     '/courses',
-    { preHandler },
+    {
+      schema: {
+        tags: ['Admin: Courses'],
+        summary: 'Create a new course',
+        description: 'Creates a new course with status "draft". Requires admin role.',
+        security: [{ bearerAuth: [] }],
+        body: zodToJsonSchema(CreateCourseBodySchema),
+        response: {
+          201: successResponse(courseResponseSchema),
+          400: errorResponseSchema,
+          401: errorResponseSchema,
+          403: errorResponseSchema,
+        },
+      },
+      preHandler,
+    },
     (request, reply) => controller.create(request, reply),
   )
 
   app.put(
     '/courses/:id',
-    { preHandler },
+    {
+      schema: {
+        tags: ['Admin: Courses'],
+        summary: 'Update a course',
+        description: 'Updates an existing course. Requires admin role.',
+        security: [{ bearerAuth: [] }],
+        params: zodToJsonSchema(AdminCourseIdParamSchema),
+        body: zodToJsonSchema(UpdateCourseBodySchema),
+        response: {
+          200: successResponse(courseResponseSchema),
+          400: errorResponseSchema,
+          401: errorResponseSchema,
+          403: errorResponseSchema,
+          404: errorResponseSchema,
+        },
+      },
+      preHandler,
+    },
     (request, reply) => controller.update(request, reply),
   )
 
   app.patch(
     '/courses/:id/publish',
-    { preHandler },
+    {
+      schema: {
+        tags: ['Admin: Courses'],
+        summary: 'Publish a course',
+        description: 'Publishes a course, making it visible in the public catalog. Requires title, description, and at least 1 lesson.',
+        security: [{ bearerAuth: [] }],
+        params: zodToJsonSchema(AdminCourseIdParamSchema),
+        response: {
+          200: successResponse(courseResponseSchema),
+          400: errorResponseSchema,
+          401: errorResponseSchema,
+          403: errorResponseSchema,
+          404: errorResponseSchema,
+        },
+      },
+      preHandler,
+    },
     (request, reply) => controller.publish(request, reply),
   )
 
   app.patch(
     '/courses/:id/unpublish',
-    { preHandler },
+    {
+      schema: {
+        tags: ['Admin: Courses'],
+        summary: 'Unpublish a course',
+        description: 'Unpublishes a course, removing it from the public catalog.',
+        security: [{ bearerAuth: [] }],
+        params: zodToJsonSchema(AdminCourseIdParamSchema),
+        response: {
+          200: successResponse(courseResponseSchema),
+          401: errorResponseSchema,
+          403: errorResponseSchema,
+          404: errorResponseSchema,
+        },
+      },
+      preHandler,
+    },
     (request, reply) => controller.unpublish(request, reply),
   )
 
   app.delete(
     '/courses/:id',
-    { preHandler },
+    {
+      schema: {
+        tags: ['Admin: Courses'],
+        summary: 'Delete a course',
+        description: 'Deletes a course. Referential integrity constraints may prevent deletion if enrollments exist.',
+        security: [{ bearerAuth: [] }],
+        params: zodToJsonSchema(AdminCourseIdParamSchema),
+        response: {
+          200: successResponse({ type: 'object' as const }),
+          401: errorResponseSchema,
+          403: errorResponseSchema,
+          404: errorResponseSchema,
+        },
+      },
+      preHandler,
+    },
     (request, reply) => controller.delete(request, reply),
   )
 }
