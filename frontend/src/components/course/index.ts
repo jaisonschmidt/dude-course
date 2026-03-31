@@ -1,3 +1,3 @@
-// TODO: Implementar componentes específicos de curso
-// Exemplos: CourseCard, CourseList, LessonItem, ProgressBar
-// Exportar os componentes aqui conforme forem criados
+export { CourseCard } from './CourseCard'
+export { CourseList } from './CourseList'
+export { ProgressBar } from './ProgressBar'
