@@ -1,14 +1,34 @@
-// TODO: Implementar formulário de registro completo
-// TODO: Integrar com auth-service.ts (POST /api/v1/auth/register)
-// TODO: Redirecionar para /login (ou /dashboard) após registro bem-sucedido
-// TODO: Exibir mensagens de erro vindas do backend (409, 400)
+'use client'
+
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+import { useAuth } from '@/hooks/use-auth'
+import { RegisterForm } from '@/components/auth/RegisterForm'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+
 export default function RegisterPage() {
+  const router = useRouter()
+  const { isAuthenticated, isLoading } = useAuth()
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      router.push('/dashboard')
+    }
+  }, [isAuthenticated, isLoading, router])
+
+  if (isLoading || isAuthenticated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    )
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="w-full max-w-md p-8">
         <h1 className="mb-6 text-2xl font-bold">Criar conta</h1>
-        {/* TODO: Formulário com campos name, email e password */}
-        {/* TODO: Exibir estado de loading e erro */}
+        <RegisterForm onSuccess={() => router.push('/login?registered=true')} />
       </div>
     </div>
   )
