@@ -8,11 +8,41 @@ Faz parte do monorepo `dude-course`. Consulte o [README raiz](../README.md) para
 
 ## ⚙️ Variáveis de Ambiente
 
-Copie o arquivo de exemplo antes de rodar:
+O backend requer um arquivo `.env` na pasta `backend/` com as variáveis abaixo. Sem ele, o servidor **não inicia** (valida via Zod no startup).
+
+### Setup rápido
 
 ```bash
-cp .env.example .env
+# Na raiz do projeto ou dentro de backend/
+cp backend/.env.example backend/.env
 ```
+
+Em seguida, edite `backend/.env` e ajuste os valores para o seu ambiente local:
+
+```dotenv
+# Conexão MySQL local (ajuste user/password conforme seu docker-compose)
+DATABASE_URL=mysql://root:root@localhost:3306/dude_course
+
+# Chave para assinar JWT tokens (mínimo 32 caracteres)
+JWT_SECRET=local-dev-secret-key-minimum-32-characters-long
+
+# Porta do servidor
+PORT=3001
+
+# Ambiente (development habilita Swagger UI)
+NODE_ENV=development
+
+# Nível de log (debug mostra mais detalhes)
+LOG_LEVEL=info
+
+# CORS — origin do frontend
+CORS_ORIGIN=http://localhost:3000
+```
+
+> ⚠️ **Erro comum**: `Invalid environment variables: DATABASE_URL: expected string, received undefined`
+> Isso significa que o arquivo `.env` não existe ou não foi encontrado. Verifique que ele está em `backend/.env` (não na raiz do monorepo).
+
+### Referência de variáveis
 
 | Variável | Descrição | Obrigatória |
 |----------|-----------|-------------|
