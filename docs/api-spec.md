@@ -379,6 +379,21 @@ Endpoint de liveness da API.
 #### Response
 - **200 OK**
 
+Exemplo de resposta (200):
+
+```json
+{
+  "data": {
+    "status": "ok",
+    "uptime": 123.45,
+    "timestamp": "2026-03-31T17:14:00.000Z",
+    "version": "0.1.0",
+    "memoryUsedMb": 42
+  },
+  "requestId": "uuid"
+}
+```
+
 ### GET /ready
 
 Endpoint de readiness da API e de suas dependências críticas.
@@ -388,6 +403,37 @@ Endpoint de readiness da API e de suas dependências críticas.
 #### Response
 - **200 OK** — API e dependências prontas para receber tráfego
 - **503 Service Unavailable** — uma ou mais dependências críticas indisponíveis
+
+Exemplo de resposta (200):
+
+```json
+{
+  "data": {
+    "status": "ready",
+    "checks": {
+      "api": "ok",
+      "database": "ok"
+    }
+  },
+  "requestId": "uuid"
+}
+```
+
+Exemplo de resposta (503):
+
+```json
+{
+  "error": {
+    "code": "SERVICE_UNAVAILABLE",
+    "message": "One or more dependencies are not ready",
+    "details": {
+      "api": "ok",
+      "database": "error"
+    },
+    "requestId": "uuid"
+  }
+}
+```
 
 ---
 

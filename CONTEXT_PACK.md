@@ -159,9 +159,30 @@ Authentication:
 
 JWT Bearer Token (1h expiration, bcrypt password hashing)
 
-Important endpoints:
+Implemented endpoints:
 
-> Endpoints serão definidos em `docs/api-spec.md` durante a implementação do domínio.
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | /auth/register | No | Register new user |
+| POST | /auth/login | No | Login, returns JWT |
+| POST | /auth/logout | Yes | Logout (client-side) |
+| GET | /courses | No | List published courses (paginated) |
+| GET | /courses/{id} | No | Course detail with lessons |
+| POST | /courses/{id}/enrollments | Yes | Enroll in course (idempotent) |
+| POST | /courses/{courseId}/lessons/{lessonId}/progress | Yes | Mark lesson completed (idempotent) |
+| GET | /me/dashboard | Yes | Learner dashboard |
+| POST | /courses/{id}/certificate | Yes | Generate certificate (idempotent) |
+| POST | /courses | Admin | Create course (draft) |
+| PUT | /courses/{id} | Admin | Update course |
+| PATCH | /courses/{id}/publish | Admin | Publish course |
+| PATCH | /courses/{id}/unpublish | Admin | Unpublish course |
+| DELETE | /courses/{id} | Admin | Delete course |
+| POST | /courses/{id}/lessons | Admin | Add lesson |
+| PUT | /courses/{id}/lessons/{lessonId} | Admin | Update lesson |
+| DELETE | /courses/{id}/lessons/{lessonId} | Admin | Delete lesson |
+| PATCH | /courses/{id}/lessons/reorder | Admin | Reorder lessons |
+| GET | /health | No | Liveness check |
+| GET | /ready | No | Readiness check (DB) |
 
 Reference:
 docs/api-spec.md
@@ -238,6 +259,7 @@ Preferred workflow:
 - ADR-0004: JWT Bearer Token Auth (`docs/adr/0004-auth-jwt.md`)
 - ADR-0005: Database Migration Strategy (`docs/adr/0005-database-environments.md`)
 - ADR-0006: CI/CD Workflow Segmentation (`docs/adr/0006-cicd-workflow-segmentation.md`)
+- ADR-0007: TDD Testing Strategy (`docs/adr/0007-tdd-testing-strategy.md`)
 
 ---
 
