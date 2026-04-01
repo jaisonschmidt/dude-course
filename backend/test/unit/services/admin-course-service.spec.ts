@@ -167,14 +167,18 @@ describe('AdminCourseService', () => {
   // ────────────────────────────────────────
   describe('delete', () => {
     it('should delete course successfully', async () => {
+      const course = createCourseFactory({ id: 1 })
+      vi.mocked(mockCourseRepo.findById).mockResolvedValue(course)
+      vi.mocked(mockLessonRepo.deleteByCourseId).mockResolvedValue(undefined)
       vi.mocked(mockCourseRepo.delete).mockResolvedValue(true)
 
       await expect(service.delete(1)).resolves.toBeUndefined()
+      expect(mockLessonRepo.deleteByCourseId).toHaveBeenCalledWith(1)
       expect(mockCourseRepo.delete).toHaveBeenCalledWith(1)
     })
 
     it('should throw NotFoundError when course does not exist', async () => {
-      vi.mocked(mockCourseRepo.delete).mockResolvedValue(false)
+      vi.mocked(mockCourseRepo.findById).mockResolvedValue(null)
 
       await expect(service.delete(999)).rejects.toThrow(NotFoundError)
       await expect(service.delete(999)).rejects.toThrow('Course not found')
