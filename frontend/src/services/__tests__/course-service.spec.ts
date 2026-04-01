@@ -28,7 +28,7 @@ describe('courseService', () => {
 
       expect(fetch).toHaveBeenCalledWith(
         expect.stringContaining('/courses?page=1&pageSize=20'),
-        expect.objectContaining({ next: { revalidate: 60 } }),
+        expect.objectContaining({ cache: 'no-store' }),
       )
       expect(result.courses).toHaveLength(1)
       expect(result.meta.totalPages).toBe(1)

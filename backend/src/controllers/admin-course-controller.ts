@@ -7,6 +7,7 @@ import {
   UpdateCourseBodySchema,
 } from '../dto/admin-course-dto.js'
 import type { AdminCourseResponseDto } from '../dto/admin-course-dto.js'
+import type { AdminLessonResponseDto } from '../dto/admin-lesson-dto.js'
 import { logger } from '../utils/logger.js'
 
 export class AdminCourseController {
@@ -25,6 +26,35 @@ export class AdminCourseController {
     )
 
     return reply.status(200).send({ data, meta: result.meta, requestId: request.id })
+  }
+
+  async getById(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+    const params = AdminCourseIdParamSchema.parse(request.params)
+
+    const courseWithLessons = await this.adminCourseService.getById(params.id)
+
+    const lessons: AdminLessonResponseDto[] = courseWithLessons.lessons.map((lesson) => ({
+      id: lesson.id,
+      courseId: lesson.courseId,
+      title: lesson.title,
+      description: lesson.description,
+      youtubeUrl: lesson.youtubeUrl,
+      position: lesson.position,
+      createdAt: lesson.createdAt.toISOString(),
+      updatedAt: lesson.updatedAt.toISOString(),
+    }))
+
+    const data = {
+      ...this.formatCourse(courseWithLessons),
+      lessons,
+    }
+
+    logger.info(
+      { requestId: request.id, courseId: params.id },
+      'admin.course.retrieved',
+    )
+
+    return reply.status(200).send({ data, requestId: request.id })
   }
 
   async create(request: FastifyRequest, reply: FastifyReply): Promise<void> {

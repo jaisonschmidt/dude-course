@@ -19,9 +19,14 @@ export async function listCourses(
     pageSize: String(pageSize),
   })
 
+  const cacheOptions =
+    process.env.NODE_ENV === 'production'
+      ? { next: { revalidate: 60 } }
+      : { cache: 'no-store' as const }
+
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1'}/courses?${params}`,
-    { next: { revalidate: 60 } },
+    cacheOptions,
   )
 
   if (!response.ok) {

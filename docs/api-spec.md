@@ -445,6 +445,8 @@ Todas as rotas admin exigem `Authorization: Bearer <token>` com `role: admin`. L
 
 ### GET /admin/courses
 
+> **Diferença entre endpoints admin e públicos:** os endpoints sob `/admin/` retornam recursos **independentemente do status** (draft, published, unpublished) e exigem role `admin`. Os endpoints públicos (ex.: `GET /courses/:id`) retornam **somente cursos publicados** e falham com 404 para cursos em outros estados.
+
 Lista todos os cursos independente do status (draft, published, unpublished), com paginação. Endpoint exclusivo para administradores.
 
 **Auth:** Sim (admin)
@@ -478,6 +480,52 @@ Exemplo de resposta (200):
     "pageSize": 20,
     "totalItems": 3,
     "totalPages": 1
+  },
+  "requestId": "req_123"
+}
+```
+
+---
+
+### GET /admin/courses/{id}
+
+Retorna os detalhes de um curso específico com suas aulas, independente do status. Endpoint exclusivo para administradores. Diferente do `GET /courses/{id}` público, que retorna somente cursos publicados.
+
+**Auth:** Sim (admin)
+
+#### Path Params
+- `id` — ID do curso (inteiro positivo)
+
+#### Response
+- **200 OK**
+- **401 Unauthorized**
+- **403 Forbidden**
+- **404 Not Found** — Curso não encontrado
+
+Exemplo de resposta (200):
+
+```json
+{
+  "data": {
+    "id": 1,
+    "title": "New Course",
+    "description": "A great course",
+    "thumbnailUrl": null,
+    "status": "draft",
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z",
+    "lessons": [
+      {
+        "id": 10,
+        "courseId": 1,
+        "title": "Introduction",
+        "description": "First lesson",
+        "youtubeUrl": "https://youtube.com/watch?v=abc",
+        "position": 1,
+        "createdAt": "2026-01-01T00:00:00.000Z",
+        "updatedAt": "2026-01-01T00:00:00.000Z"
+      }
+    ]
   },
   "requestId": "req_123"
 }

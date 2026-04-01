@@ -78,6 +78,17 @@ Adopt **Playwright** as the E2E testing framework with the following conventions
 - `data-testid` has negligible performance impact and aids debugging
 - POM reduces duplication; changes to UI require updating only the Page Object
 
+## Lessons Learned (Issue #72 implementation)
+
+The following pitfalls were discovered during the first full E2E implementation run and are now documented in `docs/engineer-guidelines.md`:
+
+1. **`count()` is not auto-retrying** — use `expect(locator).toHaveCount(n)` after navigation to wait for items to render.
+2. **`test.describe.serial` does not share `page` context** — each test receives a fresh unauthenticated page. Tests that need auth must re-login or use an auth fixture.
+3. **Next.js ISR cache makes E2E flaky** — `revalidate: 60` caches the course catalog for 60 s. Newly published courses don't appear until cache expires. Solution: use `cache: 'no-store'` when `NODE_ENV !== 'production'`.
+4. **SSR streaming duplicates testids** — same `data-testid` can appear in multiple regions (e.g., homepage featured courses + catalog page). Scope child locators inside their parent container.
+5. **FK RESTRICT blocks course deletion** — `lessons` FK to `courses` is `ON DELETE RESTRICT`. The service must delete lessons before deleting the course. See `docs/database.md`.
+6. **Admin vs public endpoints** — `GET /courses/:id` (public) returns 404 for non-published courses. Admin edit pages must use `GET /admin/courses/:id` to load drafts/unpublished courses.
+
 ## Notes
 - Impacts: `docs/project-structure.md`, `docs/engineer-guidelines.md`, `CONTEXT_PACK.md`, `docs/ai/ai-context.md`, `docs/adr/0007-tdd-testing-strategy.md`, `.github/instructions/testing.instructions.md`
 - Related issues: #72 (setup), #73, #74, #75, #76 (implementation)

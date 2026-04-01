@@ -84,9 +84,11 @@ Para decisões de arquitetura consulte: `docs/architecture.md`
 
 #### Regras/Constraints
 
-- FK para `courses(id)`
+- FK para `courses(id)` com `ON DELETE RESTRICT` (padrão Prisma)
 - unicidade composta em `course_id + position`
 - índice por `course_id`
+
+> ⚠️ **Atenção ao deletar cursos:** a FK `ON DELETE RESTRICT` impede deletar um `Course` que possua `Lesson` associada. O service deve deletar todas as lessons (e demais registros dependentes como `lesson_progress`) antes de deletar o curso.
 
 ### enrollments
 
@@ -157,6 +159,19 @@ Para decisões de arquitetura consulte: `docs/architecture.md`
 - publicação de curso depende de validações da camada de serviço; o banco garante estrutura e unicidade, mas não substitui todas as regras de publicação
 - emissão de certificado depende de conclusão de curso e deve respeitar unicidade por `user_id + course_id`
 - registros históricos de progresso e certificado não devem ser invalidados por exclusões destrutivas de cursos sem política explícita
+
+### ⚠️ Comportamento ON DELETE das FKs
+
+Todas as FKs do schema usam `ON DELETE RESTRICT` (padrão Prisma/MySQL InnoDB).
+Isso significa que **a ordem de exclusão importa** — deletar um registro pai sem deletar os filhos causa erro de FK constraint:
+
+| Para deletar | Deletar antes |
+|---|---|
+| `courses` | `lessons`, `enrollments`, `lesson_progress`, `certificates` |
+| `lessons` | `lesson_progress` |
+| `users` | `enrollments`, `lesson_progress`, `certificates` |
+
+O `AdminCourseService.delete()` implementa essa ordem: deleta lessons com `deleteByCourseId()` antes de deletar o curso.
 
 ---
 

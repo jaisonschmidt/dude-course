@@ -114,15 +114,19 @@ test.describe('Draft and Unpublished Course Access (AC5)', () => {
     await page.goto(`/courses/${draftCourseId}`)
 
     // The frontend catches the 404 from the API and shows ErrorMessage (role="alert")
-    await expect(page.getByRole('alert')).toBeVisible()
-    await expect(page.getByRole('alert')).toContainText('Curso não encontrado')
+    // Scoped to main to avoid matching Next.js __next-route-announcer__ hidden div
+    const alert = page.locator('main').getByRole('alert')
+    await expect(alert).toBeVisible()
+    await expect(alert).toContainText('Curso não encontrado')
   })
 
   test('AC5b — Unpublished course URL shows 404 error', async ({ page }) => {
     await page.goto(`/courses/${unpublishedCourseId}`)
 
-    await expect(page.getByRole('alert')).toBeVisible()
-    await expect(page.getByRole('alert')).toContainText('Curso não encontrado')
+    // Scoped to main to avoid matching Next.js __next-route-announcer__ hidden div
+    const alert = page.locator('main').getByRole('alert')
+    await expect(alert).toBeVisible()
+    await expect(alert).toContainText('Curso não encontrado')
   })
 })
 

@@ -8,6 +8,7 @@ export interface ILessonRepository {
   findByCourseId(courseId: number): Promise<Lesson[]>
   update(id: number, data: Partial<CreateLessonData>): Promise<Lesson | null>
   delete(id: number): Promise<boolean>
+  deleteByCourseId(courseId: number): Promise<void>
   updatePositions(updates: Array<{ id: number; position: number }>): Promise<void>
 }
 
@@ -83,6 +84,12 @@ export class PrismaLessonRepository implements ILessonRepository {
       }
       throw error
     }
+  }
+
+  async deleteByCourseId(courseId: number): Promise<void> {
+    await prisma.lesson.deleteMany({
+      where: { courseId },
+    })
   }
 
   async updatePositions(updates: Array<{ id: number; position: number }>): Promise<void> {
