@@ -1,4 +1,4 @@
-import { apiPost, apiPatch, apiDelete } from './api'
+import { apiPost, apiPatch, apiDelete, apiGet } from './api'
 
 const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL || 'admin@dudecourse.local'
 const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD || 'Admin@123456'
@@ -210,4 +210,85 @@ export async function reorderLessons(
   if (status !== 200) {
     throw new Error(`Lesson reorder failed (${status}): ${JSON.stringify(body)}`)
   }
+}
+
+// ──────────────────────────────────────────────────────────
+// Learner-scoped API helpers (idempotency / Wave 2 tests)
+// ──────────────────────────────────────────────────────────
+
+interface DashboardResponse {
+  inProgress: Array<{
+    courseId: number
+    title: string
+    thumbnailUrl: string | null
+    progress: { completed: number; total: number; percentage: number }
+  }>
+  completed: Array<{ courseId: number; title: string; completedAt: string }>
+  certificates: Array<{ courseId: number; certificateCode: string; title: string; issuedAt: string }>
+}
+
+interface CertificateResponse {
+  certificateCode: string
+  issuedAt: string
+}
+
+/**
+ * Enroll a learner in a course via API.
+ * Returns the HTTP status: 201 on first enroll, 200 on repeat (idempotent).
+ */
+export async function enrollInCourseAPI(
+  learnerToken: string,
+  courseId: number,
+): Promise<number> {
+  const { status } = await apiPost(`/courses/${courseId}/enrollments`, {}, learnerToken)
+  return status
+}
+
+/**
+ * Mark a lesson as complete via API.
+ * Idempotent: repeated calls return 200 without inflating progress.
+ */
+export async function markLessonCompleteAPI(
+  learnerToken: string,
+  courseId: number,
+  lessonId: number,
+): Promise<void> {
+  const { status, body } = await apiPost(
+    `/courses/${courseId}/lessons/${lessonId}/progress`,
+    {},
+    learnerToken,
+  )
+  if (status !== 200) {
+    throw new Error(`Mark lesson complete failed (${status}): ${JSON.stringify(body)}`)
+  }
+}
+
+/**
+ * Generate (or retrieve existing) certificate for a completed course.
+ * Idempotent: repeated calls return the same certificateCode.
+ */
+export async function generateCertificateAPI(
+  learnerToken: string,
+  courseId: number,
+): Promise<CertificateResponse> {
+  const { status, body } = await apiPost<CertificateResponse>(
+    `/courses/${courseId}/certificate`,
+    {},
+    learnerToken,
+  )
+  if (status !== 200 && status !== 201) {
+    throw new Error(`Certificate generation failed (${status}): ${JSON.stringify(body)}`)
+  }
+  return (body as { data: CertificateResponse }).data
+}
+
+/**
+ * Fetch the learner dashboard via API.
+ */
+export async function getDashboardAPI(learnerToken: string): Promise<DashboardResponse> {
+  const { status, body } = await apiGet<DashboardResponse>('/me/dashboard', learnerToken)
+  if (status !== 200) {
+    throw new Error(`Dashboard fetch failed (${status}): ${JSON.stringify(body)}`)
+  }
+  return (body as { data: DashboardResponse }).data
 }
