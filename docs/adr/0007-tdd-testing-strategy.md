@@ -92,7 +92,7 @@ vi.mocked(repo.create).mockRejectedValue(p2002Error)
 
 - Mock maintenance overhead when interfaces expand (all test files need updating)
 - Integration tests require Docker/MySQL running
-- No browser-based E2E tests yet
+- ~~No browser-based E2E tests yet~~ → E2E tests implemented via ADR-0010 (Playwright)
 
 ### Trade-offs
 

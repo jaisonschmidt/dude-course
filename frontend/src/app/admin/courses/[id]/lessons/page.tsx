@@ -142,7 +142,7 @@ export default function AdminLessonsPage() {
             Aulas — {courseTitle}
           </h1>
         </div>
-        <Button onClick={() => setShowAddForm(true)}>Adicionar Aula</Button>
+        <Button onClick={() => setShowAddForm(true)} data-testid="admin-add-lesson-button">Adicionar Aula</Button>
       </div>
 
       {error && <div className="mb-4"><ErrorMessage message={error} /></div>}

@@ -113,9 +113,10 @@ Estratégia recomendada:
 
 - unit tests → domínio e use cases
 - integration tests → repositories e API
-- e2e → fluxo principal
+- e2e → fluxo principal (Playwright — `e2e/` package)
 
 Use cases devem ser testados com **mocks de ports**, não com banco real.
+E2E tests usam Playwright com Page Object Model e seletores `data-testid`.
 
 ---
 
@@ -156,7 +157,7 @@ Ao implementar uma feature, a IA deve seguir a ordem:
 - Frontend: **Next.js + TypeScript** (App Router, rendering híbrido)
 - Banco: **MySQL 8.0** (Prisma ORM)
 - Testes: **Vitest**
-- Monorepo: **pnpm workspaces** (backend, frontend, database, integration-tests)
+- Monorepo: **pnpm workspaces** (backend, frontend, database, integration-tests, e2e)
 
 Preferir:
 

@@ -53,13 +53,15 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate data-testid="login-form">
       {apiError && (
-        <ErrorMessage
-          message={apiError.message}
-          requestId={apiError.requestId}
-          onRetry={() => setApiError(null)}
-        />
+        <div data-testid="login-error-message">
+          <ErrorMessage
+            message={apiError.message}
+            requestId={apiError.requestId}
+            onRetry={() => setApiError(null)}
+          />
+        </div>
       )}
 
       <Input
@@ -68,6 +70,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         placeholder="seu@email.com"
         error={errors.email?.message}
         disabled={isSubmitting}
+        data-testid="login-email-input"
         {...register('email')}
       />
 
@@ -77,16 +80,17 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         placeholder="Sua senha"
         error={errors.password?.message}
         disabled={isSubmitting}
+        data-testid="login-password-input"
         {...register('password')}
       />
 
-      <Button type="submit" loading={isSubmitting} className="mt-2 w-full">
+      <Button type="submit" loading={isSubmitting} className="mt-2 w-full" data-testid="login-submit-button">
         Entrar
       </Button>
 
       <p className="text-center text-sm text-gray-600">
         Não tem conta?{' '}
-        <Link href="/register" className="font-medium text-blue-600 hover:text-blue-700">
+        <Link href="/register" className="font-medium text-blue-600 hover:text-blue-700" data-testid="login-register-link">
           Cadastre-se
         </Link>
       </p>

@@ -20,6 +20,7 @@ export function DashboardCourseCard({
     <Link
       href={`/courses/${courseId}`}
       className="block rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md"
+      data-testid={`dashboard-course-card-${courseId}`}
     >
       <div className="aspect-video w-full overflow-hidden rounded-t-lg bg-gray-100">
         {thumbnailUrl ? (

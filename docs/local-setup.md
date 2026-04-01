@@ -40,7 +40,7 @@ cd dude-course
 pnpm install
 ```
 
-Isso instala dependências de todos os pacotes: `backend/`, `frontend/`, `database/`, `integration-tests/`.
+Isso instala dependências de todos os pacotes: `backend/`, `frontend/`, `database/`, `integration-tests/`, `e2e/`.
 
 ---
 
@@ -251,6 +251,24 @@ pnpm --filter frontend test:watch      # modo watch
 pnpm --filter frontend test:coverage   # com relatório de cobertura
 ```
 
+### Testes E2E (Playwright)
+
+Os testes E2E requerem que backend + frontend + MySQL estejam rodando localmente.
+
+#### Instalar browsers (apenas na primeira vez)
+
+```bash
+pnpm --filter e2e exec playwright install --with-deps chromium
+```
+
+#### Rodar testes E2E
+
+```bash
+pnpm e2e                # rodar todos (headless)
+pnpm e2e:ui             # modo UI interativo do Playwright
+pnpm e2e:headed         # rodar com browser visível
+```
+
 ### Todos os testes do monorepo
 
 ```bash
@@ -366,6 +384,8 @@ pnpm --filter frontend lint
 | Integration tests: dados não aparecem na API | Backend e testes **devem usar o mesmo banco** (`dude_course_test`). Reinicie o backend com `DATABASE_URL` apontando para o banco de teste |
 | Integration tests: seed insere mas API retorna vazio | Confirme que seeds usam `$executeRaw` (INSERT) e não `$queryRaw` (SELECT) — ver guidelines em `testing.instructions.md` |
 | Integration tests: `LAST_INSERT_ID` retorna errado | MySQL retorna `bigint` — use `Number(rows[0]!.id)` para converter |
+| E2E: browser não encontrado | Rodar `pnpm --filter e2e exec playwright install --with-deps chromium` |
+| E2E: testes falham por timeout | Verificar se backend (`:3001`) e frontend (`:3000`) estão rodando |
 
 ---
 

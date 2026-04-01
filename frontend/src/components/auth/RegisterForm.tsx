@@ -60,13 +60,15 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate data-testid="register-form">
       {apiError && (
-        <ErrorMessage
-          message={apiError.message}
-          requestId={apiError.requestId}
-          onRetry={() => setApiError(null)}
-        />
+        <div data-testid="register-error-message">
+          <ErrorMessage
+            message={apiError.message}
+            requestId={apiError.requestId}
+            onRetry={() => setApiError(null)}
+          />
+        </div>
       )}
 
       <Input
@@ -75,6 +77,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         placeholder="Seu nome completo"
         error={errors.name?.message}
         disabled={isSubmitting}
+        data-testid="register-name-input"
         {...register('name')}
       />
 
@@ -84,6 +87,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         placeholder="seu@email.com"
         error={errors.email?.message}
         disabled={isSubmitting}
+        data-testid="register-email-input"
         {...register('email')}
       />
 
@@ -93,6 +97,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         placeholder="Mínimo 8 caracteres"
         error={errors.password?.message}
         disabled={isSubmitting}
+        data-testid="register-password-input"
         {...register('password')}
       />
 
@@ -102,16 +107,17 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         placeholder="Repita a senha"
         error={errors.confirmPassword?.message}
         disabled={isSubmitting}
+        data-testid="register-confirm-password-input"
         {...register('confirmPassword')}
       />
 
-      <Button type="submit" loading={isSubmitting} className="mt-2 w-full">
+      <Button type="submit" loading={isSubmitting} className="mt-2 w-full" data-testid="register-submit-button">
         Criar conta
       </Button>
 
       <p className="text-center text-sm text-gray-600">
         Já tem conta?{' '}
-        <Link href="/login" className="font-medium text-blue-600 hover:text-blue-700">
+        <Link href="/login" className="font-medium text-blue-600 hover:text-blue-700" data-testid="register-login-link">
           Faça login
         </Link>
       </p>

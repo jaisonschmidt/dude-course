@@ -10,8 +10,8 @@ Desenvolvido com **squad de 11 agentes de IA** especializados, usando GitHub Cop
 - **Frontend:** Next.js + TypeScript (App Router, rendering híbrido)
 - **Banco:** MySQL 8.0 (Prisma ORM)
 - **Observabilidade:** New Relic (APM) + Pino (logging)
-- **Testes:** Vitest
-- **Monorepo:** pnpm workspaces (backend, frontend, database, integration-tests)
+- **Testes:** Vitest + Playwright (E2E)
+- **Monorepo:** pnpm workspaces (backend, frontend, database, integration-tests, e2e)
 - **Containerização:** Docker + Docker Compose
 - **Auth:** JWT Bearer Token (bcrypt)
 
@@ -188,6 +188,7 @@ Executa lint (type-check) + testes unitários do backend. Roda automaticamente n
 - [frontend/README.md](frontend/README.md) — Next.js 15 App Router
 - [database/README.md](database/README.md) — Prisma ORM, migrations, seed
 - [integration-tests/README.md](integration-tests/README.md) — Testes de integração
+- [e2e/README.md](e2e/README.md) — Testes E2E (Playwright)
 
 ## Agentes
 
