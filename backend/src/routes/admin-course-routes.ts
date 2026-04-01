@@ -33,6 +33,7 @@ export async function adminCourseRoutes(
         querystring: zodToJsonSchema(AdminListCoursesQuerySchema),
         response: {
           200: paginatedResponse(courseResponseSchema),
+          400: errorResponseSchema,
           401: errorResponseSchema,
           403: errorResponseSchema,
         },
