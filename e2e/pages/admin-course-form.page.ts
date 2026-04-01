@@ -29,4 +29,12 @@ export class AdminCourseFormPage {
     }
     await this.submitButton.click()
   }
+
+  async gotoNew() {
+    await this.page.goto('/admin/courses/new')
+  }
+
+  async gotoEdit(courseId: number) {
+    await this.page.goto(`/admin/courses/${courseId}/edit`)
+  }
 }

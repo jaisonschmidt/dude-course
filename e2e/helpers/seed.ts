@@ -1,4 +1,4 @@
-import { apiPost, apiPatch } from './api'
+import { apiPost, apiPatch, apiDelete } from './api'
 
 const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL || 'admin@dudecourse.local'
 const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD || 'Admin@123456'
@@ -161,4 +161,53 @@ export async function seedPublishedCourseWithLessons(
 
   const publishedCourse = await publishCourse(adminToken, course.id)
   return { course: publishedCourse, lessons }
+}
+
+/**
+ * Unpublish a course via admin API.
+ */
+export async function unpublishCourse(
+  adminToken: string,
+  courseId: number,
+): Promise<CourseResponse> {
+  const { status, body } = await apiPatch<CourseResponse>(
+    `/courses/${courseId}/unpublish`,
+    undefined,
+    adminToken,
+  )
+  if (status !== 200) {
+    throw new Error(`Course unpublish failed (${status}): ${JSON.stringify(body)}`)
+  }
+  return (body as { data: CourseResponse }).data
+}
+
+/**
+ * Delete a course via admin API.
+ */
+export async function deleteCourse(
+  adminToken: string,
+  courseId: number,
+): Promise<void> {
+  const { status } = await apiDelete(`/courses/${courseId}`, adminToken)
+  if (status !== 200 && status !== 204) {
+    throw new Error(`Course delete failed (${status})`)
+  }
+}
+
+/**
+ * Reorder lessons via admin API.
+ */
+export async function reorderLessons(
+  adminToken: string,
+  courseId: number,
+  lessons: Array<{ lessonId: number; position: number }>,
+): Promise<void> {
+  const { status, body } = await apiPatch(
+    `/courses/${courseId}/lessons/reorder`,
+    { lessons } as unknown as Record<string, unknown>,
+    adminToken,
+  )
+  if (status !== 200) {
+    throw new Error(`Lesson reorder failed (${status}): ${JSON.stringify(body)}`)
+  }
 }
