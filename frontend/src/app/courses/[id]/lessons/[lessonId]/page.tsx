@@ -102,7 +102,7 @@ export default function LessonPlayerPage() {
             <div className="mb-2 flex items-center gap-2">
               <span className="text-sm text-gray-500">Aula {lesson.position}</span>
               {isCompleted && (
-                <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700" data-testid="lesson-completed-badge">
                   ✓ Concluída
                 </span>
               )}
@@ -112,7 +112,7 @@ export default function LessonPlayerPage() {
 
             <div className="flex flex-wrap items-center gap-3">
               {!isCompleted && (
-                <Button onClick={handleMarkComplete} loading={markingComplete}>
+                <Button onClick={handleMarkComplete} loading={markingComplete} data-testid="lesson-mark-complete-button">
                   Marcar como Concluída
                 </Button>
               )}
@@ -122,6 +122,7 @@ export default function LessonPlayerPage() {
                   <Link
                     href={`/courses/${courseId}/lessons/${prevLesson.id}`}
                     className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                    data-testid="lesson-prev-link"
                   >
                     ← Aula Anterior
                   </Link>
@@ -130,6 +131,7 @@ export default function LessonPlayerPage() {
                   <Link
                     href={`/courses/${courseId}/lessons/${nextLesson.id}`}
                     className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                    data-testid="lesson-next-link"
                   >
                     Próxima Aula →
                   </Link>

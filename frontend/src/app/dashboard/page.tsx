@@ -129,7 +129,7 @@ function DashboardContent() {
                   </p>
                 </div>
                 {hasCertificateFor(course.courseId) ? (
-                  <span className="rounded bg-green-100 px-3 py-1 text-sm font-medium text-green-700">
+                  <span className="rounded bg-green-100 px-3 py-1 text-sm font-medium text-green-700" data-testid={`certificate-issued-${course.courseId}`}>
                     ✓ Certificado Emitido
                   </span>
                 ) : (
@@ -137,6 +137,7 @@ function DashboardContent() {
                     onClick={() => handleGenerateCertificate(course.courseId, course.title)}
                     disabled={generatingCertFor === course.courseId}
                     className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+                    data-testid={`generate-certificate-${course.courseId}`}
                   >
                     {generatingCertFor === course.courseId ? 'Gerando...' : 'Gerar Certificado'}
                   </button>

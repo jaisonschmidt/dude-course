@@ -123,9 +123,9 @@ export default function CourseDetailPage() {
         </div>
         <div className="flex flex-1 flex-col justify-between">
           <div>
-            <h1 className="mb-2 text-3xl font-bold text-gray-900">{course.title}</h1>
-            <p className="mb-4 text-gray-600">{course.description}</p>
-            <p className="text-sm text-gray-500">
+            <h1 className="mb-2 text-3xl font-bold text-gray-900" data-testid="course-detail-title">{course.title}</h1>
+            <p className="mb-4 text-gray-600" data-testid="course-detail-description">{course.description}</p>
+            <p className="text-sm text-gray-500" data-testid="course-detail-lesson-count">
               {course.lessons.length} {course.lessons.length === 1 ? 'aula' : 'aulas'}
             </p>
           </div>
