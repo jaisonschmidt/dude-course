@@ -18,6 +18,7 @@
     "lint": "pnpm -r --if-present lint",
     "format": "pnpm -r --if-present format",
     "e2e": "pnpm --filter e2e test",
+    "e2e:report": "pnpm --filter e2e test:report",
     "e2e:ui": "pnpm --filter e2e test:ui",
     "e2e:headed": "pnpm --filter e2e test:headed",
     "e2e:debug": "pnpm --filter e2e test:debug",

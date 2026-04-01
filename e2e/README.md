@@ -28,6 +28,9 @@ pnpm --filter database db:seed
 # Run all E2E tests (starts backend + frontend automatically)
 pnpm e2e
 
+# Run tests and open HTML report automatically if all pass
+pnpm e2e:report
+
 # Run with Playwright UI (interactive mode)
 pnpm e2e:ui
 
@@ -47,7 +50,9 @@ cd e2e && pnpm test
 
 After a test run, Playwright generates an HTML report in `e2e/playwright-report/`.
 
-Open it with:
+Use `pnpm e2e:report` to run tests and open the report automatically — **the report only opens if all tests pass**.
+
+To open the report from a previous run:
 
 ```bash
 cd e2e && npx playwright show-report
