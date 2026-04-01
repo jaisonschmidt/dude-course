@@ -257,7 +257,8 @@ Uma tarefa só é “done” quando:
 - [ ] endpoints aderentes a `docs/api-spec.md`
 - [ ] migrations incluídas quando houver alteração de schema
 - [ ] logs e tratamento de erro adequados
-- [ ] documentação atualizada (se necessário)- [ ] HTTP client não envia `Content-Type` em requisições sem body
+- [ ] documentação atualizada (se necessário)
+- [ ] HTTP client não envia `Content-Type` em requisições sem body
 - [ ] locators E2E resilientes a streaming SSR (`.first()` quando necessário)
 ---
 
