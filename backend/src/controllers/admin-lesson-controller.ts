@@ -7,7 +7,7 @@ import {
   UpdateLessonBodySchema,
   ReorderLessonsBodySchema,
 } from '../dto/admin-lesson-dto.js'
-import type { AdminLessonResponseDto, ReorderLessonResponseDto } from '../dto/admin-lesson-dto.js'
+import type { AdminLessonResponseDto } from '../dto/admin-lesson-dto.js'
 import { logger } from '../utils/logger.js'
 
 export class AdminLessonController {
@@ -104,12 +104,7 @@ export class AdminLessonController {
 
     const lessons = await this.adminLessonService.reorder(params.id, body.lessons)
 
-    const data: ReorderLessonResponseDto[] = lessons.map((l) => ({
-      id: l.id,
-      courseId: l.courseId,
-      title: l.title,
-      position: l.position,
-    }))
+    const data: AdminLessonResponseDto[] = lessons.map((l) => this.formatLesson(l))
 
     logger.info(
       { requestId: request.id, userId: request.user.id, courseId: params.id },

@@ -81,6 +81,12 @@ test.describe.serial('Learner Journey — register → certificate', () => {
   })
 
   test('AC1.3 — View course detail and enroll', async ({ page }) => {
+    // Re-login: serial tests get fresh page instances (no shared cookies)
+    const loginPage = new LoginPage(page)
+    await loginPage.goto()
+    await loginPage.login(learnerEmail, learnerPassword)
+    await page.waitForURL('**/dashboard')
+
     const detailPage = new CourseDetailPage(page)
     await detailPage.goto(courseId)
 
@@ -101,6 +107,12 @@ test.describe.serial('Learner Journey — register → certificate', () => {
   })
 
   test('AC3 — Complete first lesson and verify progress', async ({ page }) => {
+    // Re-login: serial tests get fresh page instances
+    const loginPage = new LoginPage(page)
+    await loginPage.goto()
+    await loginPage.login(learnerEmail, learnerPassword)
+    await page.waitForURL('**/dashboard')
+
     const lessonPlayer = new LessonPlayerPage(page)
 
     // Navigate to first lesson
@@ -123,6 +135,12 @@ test.describe.serial('Learner Journey — register → certificate', () => {
   })
 
   test('AC1.4 — Complete remaining lessons', async ({ page }) => {
+    // Re-login: serial tests get fresh page instances
+    const loginPage = new LoginPage(page)
+    await loginPage.goto()
+    await loginPage.login(learnerEmail, learnerPassword)
+    await page.waitForURL('**/dashboard')
+
     const lessonPlayer = new LessonPlayerPage(page)
 
     // Complete lesson 2
@@ -141,6 +159,12 @@ test.describe.serial('Learner Journey — register → certificate', () => {
   test('AC4 — Dashboard shows completed course and generate certificate', async ({
     page,
   }) => {
+    // Re-login: serial tests get fresh page instances
+    const loginPage = new LoginPage(page)
+    await loginPage.goto()
+    await loginPage.login(learnerEmail, learnerPassword)
+    await page.waitForURL('**/dashboard')
+
     const dashboard = new DashboardPage(page)
     await dashboard.goto()
 

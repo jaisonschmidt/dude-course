@@ -1,21 +1,19 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect } from 'react'
 import { useAuth } from '@/hooks/use-auth'
 import { LoginForm } from '@/components/auth/LoginForm'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { isAuthenticated, isLoading } = useAuth()
-  const [successMessage] = useState(() => {
-    if (typeof window === 'undefined') return null
-    const params = new URLSearchParams(window.location.search)
-    return params.get('registered') === 'true'
+  const successMessage =
+    searchParams.get('registered') === 'true'
       ? 'Conta criada com sucesso! Faça login para continuar.'
       : null
-  })
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {

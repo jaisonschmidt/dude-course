@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { CourseList } from '@/components/course/CourseList'
 import { listCourses } from '@/services/course-service'
 
-export const revalidate = 60
+export const revalidate = process.env.NODE_ENV === 'production' ? 60 : 0
 
 export default async function HomePage() {
   let featuredCourses: Awaited<ReturnType<typeof listCourses>>['courses'] = []

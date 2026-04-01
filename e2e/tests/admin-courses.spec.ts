@@ -159,9 +159,10 @@ test.describe.serial('Admin Course Lifecycle — create → delete', () => {
     const lessonsPage = new AdminLessonsPage(page)
     await lessonsPage.goto(createdCourseId)
 
+    // Wait for the lesson list to load before asserting
+    await expect(lessonsPage.lessonReorderList).toBeVisible()
     const lessonItems = page.locator('[data-testid^="lesson-reorder-item-"]')
-    const count = await lessonItems.count()
-    expect(count).toBe(3)
+    await expect(lessonItems).toHaveCount(3)
 
     // First item should now be lessonIds[1] (moved to position 1)
     const firstTestId = await lessonItems.first().getAttribute('data-testid')

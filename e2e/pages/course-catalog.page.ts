@@ -20,6 +20,6 @@ export class CourseCatalogPage {
   }
 
   courseCard(courseId: number): Locator {
-    return this.page.getByTestId(`course-card-${courseId}`)
+    return this.courseList.getByTestId(`course-card-${courseId}`)
   }
 }

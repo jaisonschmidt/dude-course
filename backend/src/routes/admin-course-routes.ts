@@ -14,7 +14,19 @@ import {
   successResponse,
   paginatedResponse,
   courseResponseSchema,
+  adminLessonResponseSchema,
 } from '../dto/openapi-schemas.js'
+
+const adminCourseDetailSchema = {
+  ...courseResponseSchema,
+  properties: {
+    ...courseResponseSchema.properties,
+    lessons: {
+      type: 'array' as const,
+      items: adminLessonResponseSchema,
+    },
+  },
+}
 
 export async function adminCourseRoutes(
   app: FastifyInstance,
@@ -41,6 +53,27 @@ export async function adminCourseRoutes(
       preHandler,
     },
     (request, reply) => controller.list(request, reply),
+  )
+
+  app.get(
+    '/admin/courses/:id',
+    {
+      schema: {
+        tags: ['Admin: Courses'],
+        summary: 'Get course details (admin)',
+        description: 'Returns a course with its lessons regardless of status. Requires admin role.',
+        security: [{ bearerAuth: [] }],
+        params: zodToJsonSchema(AdminCourseIdParamSchema),
+        response: {
+          200: successResponse(adminCourseDetailSchema),
+          401: errorResponseSchema,
+          403: errorResponseSchema,
+          404: errorResponseSchema,
+        },
+      },
+      preHandler,
+    },
+    (request, reply) => controller.getById(request, reply),
   )
 
   app.post(

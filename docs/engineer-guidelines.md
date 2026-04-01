@@ -101,7 +101,42 @@ ADRs registram decisões arquiteturais significativas do projeto. Cada ADR é um
 ### SSR/Streaming e E2E
 - Next.js com streaming SSR pode renderizar o mesmo `data-testid` múltiplas vezes durante o ciclo de streaming (shell + conteúdo final).
 - Em locators Playwright que referenciam testids em áreas afetadas por streaming, usar `.first()` para evitar erros de "strict mode violation" (ex: `page.getByTestId('course-list').first()`).
+- Ao buscar um item filho (ex: `course-card-X`), escope-o dentro do container pai já qualificado (ex: `courseList.locator('[data-testid=...]')`) para não colidir com duplicatas de outras regiões da página.
 - Documentar no Page Object o motivo do `.first()` para manutenibilidade.
+
+### Assertivas auto-retrying vs snapshot
+- **Sempre usar assertivas auto-retrying** (`expect(locator).toHaveCount(n)`, `expect(locator).toBeVisible()`) em vez de métodos snapshot (`locator.count()`, `locator.innerText()`) quando a página pode ainda estar carregando.
+- `locator.count()` retorna **imediatamente** sem aguardar. Se a lista ainda não renderizou, retorna `0` e a asserção falha de forma intermitente (flaky).
+- Regra: se o valor depende de render assíncrono, use `expect(locator).toHaveCount(n)` — ele re-tenta até o timeout.
+
+```typescript
+// ❌ Flaky — não auto-espera
+const count = await items.count()
+expect(count).toBe(3)
+
+// ✅ Correto — auto-retrying
+await expect(items).toHaveCount(3)
+```
+
+### test.describe.serial e contexto de página
+- Em `test.describe.serial`, **variáveis declaradas fora dos testes são compartilhadas** entre todos os testes do bloco (útil para `courseId`, `lessonIds`, tokens).
+- Porém, **cada teste recebe uma `page` nova e sem autenticação**, mesmo que o teste anterior tenha feito login.
+- Testes que precisam de autenticação devem fazer login explicitamente ou usar o fixture `authenticatedAdminPage` / `authenticatedLearnerPage`.
+- Não assuma que a sessão do teste anterior persiste.
+
+### ISR Cache (Next.js) e E2E
+- O Next.js usa ISR (`revalidate: 60`) por padrão nas páginas de catálogo. Em testes E2E, isso faz o catálogo retornar dados stale da requisição anterior, ocultando cursos recém-publicados.
+- **Regra:** desabilitar ISR cache em ambientes não-produção usando `cache: 'no-store'` condicionalmente:
+```typescript
+const cacheOptions =
+  process.env.NODE_ENV === 'production'
+    ? { next: { revalidate: 60 } }
+    : { cache: 'no-store' as const }
+```
+- Aplicar também nos `export const revalidate` das páginas SSR:
+```typescript
+export const revalidate = process.env.NODE_ENV === 'production' ? 60 : 0
+```
 
 ### Regras
 - Cada Use Case deve ter testes de:

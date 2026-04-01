@@ -1,7 +1,12 @@
 import type { Course, CreateCourseData } from '../models/course.js'
+import type { Lesson } from '../models/lesson.js'
 import type { ICourseRepository } from '../repositories/course-repository.js'
 import type { ILessonRepository } from '../repositories/lesson-repository.js'
 import { NotFoundError, BadRequestError } from '../models/errors.js'
+
+export interface CourseWithLessons extends Course {
+  lessons: Lesson[]
+}
 
 export interface CreateCourseInput {
   title: string
@@ -39,6 +44,18 @@ export class AdminCourseService {
       data: courses,
       meta: { page, pageSize, totalItems, totalPages },
     }
+  }
+
+  async getById(id: number): Promise<CourseWithLessons> {
+    const course = await this.courseRepository.findById(id)
+
+    if (!course) {
+      throw new NotFoundError('Course not found')
+    }
+
+    const lessons = await this.lessonRepository.findByCourseId(id)
+
+    return { ...course, lessons }
   }
 
   async create(data: CreateCourseInput): Promise<Course> {
@@ -117,10 +134,15 @@ export class AdminCourseService {
   }
 
   async delete(id: number): Promise<void> {
-    const deleted = await this.courseRepository.delete(id)
+    const course = await this.courseRepository.findById(id)
 
-    if (!deleted) {
+    if (!course) {
       throw new NotFoundError('Course not found')
     }
+
+    // Delete related lessons first (FK onDelete: Restrict)
+    await this.lessonRepository.deleteByCourseId(id)
+
+    await this.courseRepository.delete(id)
   }
 }

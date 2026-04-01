@@ -3,7 +3,7 @@ import { CourseList } from '@/components/course/CourseList'
 import { ErrorMessage } from '@/components/ui/ErrorMessage'
 import { listCourses } from '@/services/course-service'
 
-export const revalidate = 60
+export const revalidate = process.env.NODE_ENV === 'production' ? 60 : 0
 
 interface CoursesPageProps {
   searchParams: Promise<{ page?: string }>

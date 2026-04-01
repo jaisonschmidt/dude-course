@@ -89,8 +89,9 @@ export async function deleteCourse(id: number): Promise<void> {
 
 /**
  * Retorna um curso com lessons (para edição admin).
+ * Usa o endpoint admin que retorna cursos de qualquer status.
  */
 export async function getAdminCourse(id: number): Promise<CourseWithLessons> {
-  const { data } = await apiRequest<CourseWithLessons>(`/courses/${id}`)
+  const { data } = await apiRequest<CourseWithLessons>(`/admin/courses/${id}`)
   return data
 }
