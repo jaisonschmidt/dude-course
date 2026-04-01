@@ -10,7 +10,7 @@ export class CourseCatalogPage {
   constructor(page: Page) {
     this.page = page
     this.courseList = page.getByTestId('course-list').first()
-    this.paginationPrev = page.getByTestId('pagination-prev')
+    this.paginationPrev = page.getByTestId('pagination-prev').first() // .first() is required because Next.js streaming SSR can duplicate this test id in strict mode
     this.paginationNext = page.getByTestId('pagination-next')
     this.paginationInfo = page.getByTestId('pagination-info')
   }
