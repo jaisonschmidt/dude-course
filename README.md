@@ -178,6 +178,9 @@ Executa lint (type-check) + testes unitários do backend. Roda automaticamente n
 | `pnpm dev:frontend` | Sobe apenas o frontend |
 | `pnpm dev:db` | Sobe o MySQL via Docker (Docker Compose) |
 | `pnpm test` | Roda todos os testes do monorepo |
+| `pnpm e2e` | Roda todos os testes E2E (headless, inicia backend + frontend automaticamente) |
+| `pnpm e2e:ui` | Testes E2E com Playwright UI (modo interativo) |
+| `pnpm e2e:headed` | Testes E2E com browser visível |
 | `pnpm build` | Builda todos os pacotes |
 
 > Para setup detalhado (env vars, banco de testes, etc.), consulte [`docs/local-setup.md`](docs/local-setup.md).
