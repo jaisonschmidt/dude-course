@@ -9,7 +9,7 @@ export class CourseCatalogPage {
 
   constructor(page: Page) {
     this.page = page
-    this.courseList = page.getByTestId('course-list')
+    this.courseList = page.getByTestId('course-list').first()
     this.paginationPrev = page.getByTestId('pagination-prev')
     this.paginationNext = page.getByTestId('pagination-next')
     this.paginationInfo = page.getByTestId('pagination-info')

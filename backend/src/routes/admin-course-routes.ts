@@ -4,6 +4,7 @@ import { authMiddleware } from '../middlewares/auth.js'
 import { adminGuardMiddleware } from '../middlewares/admin-guard.js'
 import {
   AdminCourseIdParamSchema,
+  AdminListCoursesQuerySchema,
   CreateCourseBodySchema,
   UpdateCourseBodySchema,
 } from '../dto/admin-course-dto.js'
@@ -11,6 +12,7 @@ import { zodToJsonSchema } from '../utils/zod-to-json-schema.js'
 import {
   errorResponseSchema,
   successResponse,
+  paginatedResponse,
   courseResponseSchema,
 } from '../dto/openapi-schemas.js'
 
@@ -19,6 +21,26 @@ export async function adminCourseRoutes(
   controller: AdminCourseController,
 ): Promise<void> {
   const preHandler = [authMiddleware, adminGuardMiddleware]
+
+  app.get(
+    '/admin/courses',
+    {
+      schema: {
+        tags: ['Admin: Courses'],
+        summary: 'List all courses (admin)',
+        description: 'Lists all courses regardless of status, with pagination. Requires admin role.',
+        security: [{ bearerAuth: [] }],
+        querystring: zodToJsonSchema(AdminListCoursesQuerySchema),
+        response: {
+          200: paginatedResponse(courseResponseSchema),
+          401: errorResponseSchema,
+          403: errorResponseSchema,
+        },
+      },
+      preHandler,
+    },
+    (request, reply) => controller.list(request, reply),
+  )
 
   app.post(
     '/courses',

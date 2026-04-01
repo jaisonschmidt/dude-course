@@ -30,6 +30,6 @@ test.describe('E2E Infrastructure Smoke Test', () => {
 
   test('courses catalog page loads', async ({ page }) => {
     await page.goto('/courses')
-    await expect(page.getByTestId('course-list')).toBeVisible()
+    await expect(page.getByTestId('course-list').first()).toBeVisible()
   })
 })

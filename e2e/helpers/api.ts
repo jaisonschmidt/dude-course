@@ -61,8 +61,9 @@ export async function apiPatch<T = unknown>(
   body?: Record<string, unknown>,
   token?: string,
 ): Promise<ApiResult<T>> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+  const headers: Record<string, string> = {}
+  if (body !== undefined) {
+    headers['Content-Type'] = 'application/json'
   }
   if (token) {
     headers['Authorization'] = `Bearer ${token}`

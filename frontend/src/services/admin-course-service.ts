@@ -15,13 +15,14 @@ export interface UpdateCourseInput {
 
 /**
  * Lista todos os cursos (admin vê todos os status).
+ * Chama o endpoint admin GET /admin/courses que retorna cursos de qualquer status.
  */
 export async function listAllCourses(
   page = 1,
   pageSize = 100,
 ): Promise<{ courses: Course[]; meta: PaginationMeta }> {
   const { data, ...rest } = await apiRequest<Course[]>(
-    `/courses?page=${page}&pageSize=${pageSize}`,
+    `/admin/courses?page=${page}&pageSize=${pageSize}`,
   )
   return {
     courses: data,

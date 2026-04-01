@@ -98,12 +98,32 @@ ADRs registram decisões arquiteturais significativas do projeto. Cada ADR é um
 - **Quando NÃO usar E2E**: validação de lógica de negócio isolada (usar unit test), queries de repositório (usar integration test)
 - **Decisão**: ADR-0010
 
+### SSR/Streaming e E2E
+- Next.js com streaming SSR pode renderizar o mesmo `data-testid` múltiplas vezes durante o ciclo de streaming (shell + conteúdo final).
+- Em locators Playwright que referenciam testids em áreas afetadas por streaming, usar `.first()` para evitar erros de "strict mode violation" (ex: `page.getByTestId('course-list').first()`).
+- Documentar no Page Object o motivo do `.first()` para manutenibilidade.
+
 ### Regras
 - Cada Use Case deve ter testes de:
   - fluxo feliz
   - validação de entrada
   - casos de erro esperados (ex.: curso não existe)
 - Use Cases devem ser testados com **mocks das ports** (interfaces), não com DB real.
+
+---
+
+## 🌐 HTTP Client Conventions
+
+### Content-Type Header
+- Incluir `Content-Type: application/json` **somente quando a requisição contiver body**.
+- Requisições sem body (ex.: PATCH de publish/unpublish, DELETE) **não devem** enviar o header `Content-Type`.
+- Fastify retorna `400 Bad Request` se receber `Content-Type: application/json` com body vazio/undefined.
+- Regra aplicável ao frontend (`frontend/src/services/api.ts`) e ao helper E2E (`e2e/helpers/api.ts`).
+
+### Padrão para helpers de API (E2E)
+- `apiPost` / `apiPut`: sempre inclui `Content-Type: application/json` (body obrigatório).
+- `apiPatch`: inclui `Content-Type` **somente** quando `body !== undefined`.
+- `apiGet` / `apiDelete`: **nunca** inclui `Content-Type`.
 
 ---
 
@@ -237,8 +257,8 @@ Uma tarefa só é “done” quando:
 - [ ] endpoints aderentes a `docs/api-spec.md`
 - [ ] migrations incluídas quando houver alteração de schema
 - [ ] logs e tratamento de erro adequados
-- [ ] documentação atualizada (se necessário)
-
+- [ ] documentação atualizada (se necessário)- [ ] HTTP client não envia `Content-Type` em requisições sem body
+- [ ] locators E2E resilientes a streaming SSR (`.first()` quando necessário)
 ---
 
 ## 🤖 Regras para IA (Copilot / Agents)

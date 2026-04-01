@@ -7,6 +7,8 @@ export interface ICourseRepository {
   findById(id: number): Promise<Course | null>
   findByStatus(status: CourseStatus): Promise<Course[]>
   findPublished(page: number, pageSize: number): Promise<Course[]>
+  findAll(page: number, pageSize: number): Promise<Course[]>
+  countAll(): Promise<number>
   countByStatus(status: CourseStatus): Promise<number>
   update(id: number, data: Partial<CreateCourseData>): Promise<Course | null>
   delete(id: number): Promise<boolean>
@@ -61,6 +63,20 @@ export class PrismaCourseRepository implements ICourseRepository {
     return prisma.course.count({
       where: { status },
     })
+  }
+
+  async findAll(page: number, pageSize: number): Promise<Course[]> {
+    const courses = await prisma.course.findMany({
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+      orderBy: { createdAt: 'desc' },
+    })
+
+    return courses.map((c) => this.mapToCourse(c))
+  }
+
+  async countAll(): Promise<number> {
+    return prisma.course.count()
   }
 
   async update(

@@ -443,6 +443,48 @@ Exemplo de resposta (503):
 
 Todas as rotas admin exigem `Authorization: Bearer <token>` com `role: admin`. Learners recebem `403 FORBIDDEN`.
 
+### GET /admin/courses
+
+Lista todos os cursos independente do status (draft, published, unpublished), com paginação. Endpoint exclusivo para administradores.
+
+**Auth:** Sim (admin)
+
+#### Query Params (opcional)
+- `page` (default: 1)
+- `pageSize` (default: 20, max: 100)
+
+#### Response
+- **200 OK**
+- **401 Unauthorized**
+- **403 Forbidden**
+
+Exemplo de resposta (200):
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "New Course",
+      "description": "A great course",
+      "thumbnailUrl": null,
+      "status": "draft",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "pageSize": 20,
+    "totalItems": 3,
+    "totalPages": 1
+  },
+  "requestId": "req_123"
+}
+```
+
+---
+
 ### POST /courses
 
 Cria um novo curso (status inicial: `draft`).
@@ -518,6 +560,8 @@ Publica um curso existente.
 
 **Auth:** Sim (admin)
 
+> **Nota:** esta rota não aceita corpo na requisição. Enviar `Content-Type: application/json` sem body pode causar erro 400.
+
 #### Path Params
 - `id` (number)
 
@@ -542,6 +586,8 @@ Exemplo de resposta (200): Course com `"status": "published"`.
 Despublica um curso, tornando-o invisível no catálogo.
 
 **Auth:** Sim (admin)
+
+> **Nota:** esta rota não aceita corpo na requisição. Enviar `Content-Type: application/json` sem body pode causar erro 400.
 
 #### Path Params
 - `id` (number)
@@ -744,6 +790,7 @@ Todas as operações de escrita abaixo são **idempotentes** — chamadas repeti
 - [x] Dashboard do learner
 - [x] Certificados idempotentes
 - [x] Admin CRUD de cursos
+- [x] Admin listing de cursos (GET /admin/courses)
 - [x] Admin CRUD de lessons
 - [x] Admin publish/unpublish
 - [x] Admin reorder lessons

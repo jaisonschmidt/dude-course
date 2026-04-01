@@ -32,8 +32,10 @@ function createMockCourseRepository(): ICourseRepository {
   return {
     create: vi.fn(),
     findById: vi.fn(),
+    findAll: vi.fn(),
     findByStatus: vi.fn(),
     findPublished: vi.fn(),
+    countAll: vi.fn(),
     countByStatus: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
