@@ -42,8 +42,13 @@ Frontend
 
 E2E Testing
 - Playwright (browser-based E2E tests)
-- Page Object Model (POM) pattern
-- data-testid selectors
+- Page Object Model (POM) pattern — 1 class per page in e2e/pages/
+- data-testid selectors exclusively
+- Auth fixtures: authenticatedLearnerPage, authenticatedAdminPage
+- Seed helpers: HTTP API calls via e2e/helpers/seed.ts (no direct DB access)
+- Test suites: smoke, learner-journey, admin-courses, auth-protection, idempotency, validation-security
+- workers: 1 (serial execution for journey tests)
+- CI: .github/workflows/ci-e2e.yml
 
 Database
 - MySQL 8.0
