@@ -86,7 +86,7 @@ export default function AdminCoursesPage() {
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Cursos</h1>
         <Link href="/admin/courses/new">
-          <Button>Novo Curso</Button>
+          <Button data-testid="admin-create-course-button">Novo Curso</Button>
         </Link>
       </div>
 

@@ -21,6 +21,7 @@ export function LessonItem({
   return (
     <Link
       href={`/courses/${courseId}/lessons/${lessonId}`}
+      data-testid={`lesson-item-${lessonId}`}
       className={cn(
         'flex items-center gap-3 rounded-lg px-4 py-3 text-sm transition-colors',
         isActive
@@ -36,6 +37,7 @@ export function LessonItem({
             : 'bg-gray-100 text-gray-500',
         )}
         aria-label={isCompleted ? 'Concluída' : 'Pendente'}
+        data-testid={`lesson-item-status-${lessonId}`}
       >
         {isCompleted ? '✓' : position}
       </span>

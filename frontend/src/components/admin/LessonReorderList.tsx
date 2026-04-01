@@ -47,12 +47,14 @@ function SortableItem({ lesson, onEdit, onDelete }: SortableItemProps) {
       ref={setNodeRef}
       style={style}
       className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 shadow-sm"
+      data-testid={`lesson-reorder-item-${lesson.id}`}
     >
       <button
         {...attributes}
         {...listeners}
         className="cursor-grab touch-none rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
         aria-label={`Reordenar ${lesson.title}`}
+        data-testid={`lesson-reorder-drag-${lesson.id}`}
       >
         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
@@ -68,12 +70,14 @@ function SortableItem({ lesson, onEdit, onDelete }: SortableItemProps) {
         <button
           onClick={() => onEdit(lesson)}
           className="rounded px-2 py-1 text-sm text-blue-600 hover:bg-blue-50"
+          data-testid={`lesson-reorder-edit-${lesson.id}`}
         >
           Editar
         </button>
         <button
           onClick={() => onDelete(lesson.id)}
           className="rounded px-2 py-1 text-sm text-red-600 hover:bg-red-50"
+          data-testid={`lesson-reorder-delete-${lesson.id}`}
         >
           Deletar
         </button>
@@ -139,7 +143,7 @@ export function LessonReorderList({
         items={items.map((l) => l.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div className="space-y-2">
+        <div className="space-y-2" data-testid="lesson-reorder-list">
           {items.map((lesson) => (
             <SortableItem
               key={lesson.id}

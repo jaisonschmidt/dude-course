@@ -2,14 +2,9 @@
 
 type ButtonVariant = 'primary' | 'secondary' | 'danger'
 
-interface ButtonProps {
-  children: React.ReactNode
-  onClick?: () => void
-  disabled?: boolean
-  type?: 'button' | 'submit' | 'reset'
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean
   variant?: ButtonVariant
-  className?: string
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
@@ -20,21 +15,21 @@ const variantClasses: Record<ButtonVariant, string> = {
 
 export function Button({
   children,
-  onClick,
   disabled = false,
   type = 'button',
   loading = false,
   variant = 'primary',
   className = '',
+  ...props
 }: ButtonProps) {
   const isDisabled = disabled || loading
 
   return (
     <button
       type={type}
-      onClick={onClick}
       disabled={isDisabled}
       className={`rounded-lg px-4 py-2 font-medium transition-colors disabled:cursor-not-allowed ${variantClasses[variant]} ${className}`}
+      {...props}
     >
       {loading ? 'Carregando...' : children}
     </button>

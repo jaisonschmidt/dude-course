@@ -47,12 +47,13 @@ export function CourseForm({ initialData, onSubmit, isLoading = false }: CourseF
   }
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4" data-testid="course-form">
       <Input
         label="Título"
         {...register('title')}
         error={errors.title?.message}
         disabled={isLoading}
+        data-testid="course-form-title"
       />
       <div className="flex flex-col gap-1">
         <label htmlFor="description" className="text-sm font-medium text-gray-700">
@@ -63,6 +64,7 @@ export function CourseForm({ initialData, onSubmit, isLoading = false }: CourseF
           rows={4}
           className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
           disabled={isLoading}
+          data-testid="course-form-description"
           {...register('description')}
         />
         {errors.description && (
@@ -77,9 +79,10 @@ export function CourseForm({ initialData, onSubmit, isLoading = false }: CourseF
         error={errors.thumbnailUrl?.message}
         disabled={isLoading}
         placeholder="https://example.com/image.jpg"
+        data-testid="course-form-thumbnail"
       />
       <div className="flex justify-end">
-        <Button type="submit" loading={isLoading}>
+        <Button type="submit" loading={isLoading} data-testid="course-form-submit">
           {initialData ? 'Salvar' : 'Criar Curso'}
         </Button>
       </div>

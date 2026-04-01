@@ -16,7 +16,7 @@ export function DashboardStats({
   ]
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3" data-testid="dashboard-stats">
       {stats.map((stat) => (
         <div
           key={stat.label}

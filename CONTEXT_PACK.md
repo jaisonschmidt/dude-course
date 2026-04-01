@@ -40,6 +40,11 @@ Frontend
 - React Context API (auth state management)
 - Vitest + Testing Library + user-event (223 tests, 42 test files)
 
+E2E Testing
+- Playwright (browser-based E2E tests)
+- Page Object Model (POM) pattern
+- data-testid selectors
+
 Database
 - MySQL 8.0
 
@@ -79,6 +84,7 @@ Monorepo structure (pnpm workspaces):
 - `frontend/` — Next.js App Router
 - `database/` — Prisma schema, migrations, seeds
 - `integration-tests/` — testes de integração com DB real
+- `e2e/` — testes end-to-end com Playwright
 
 Reference:
 docs/architecture.md
@@ -268,6 +274,7 @@ Preferred workflow:
 - ADR-0007: TDD Testing Strategy (`docs/adr/0007-tdd-testing-strategy.md`)
 - ADR-0008: Swagger/OpenAPI (`docs/adr/0008-swagger-openapi.md`)
 - ADR-0009: Frontend Components In-App (`docs/adr/0009-frontend-components-in-app.md`)
+- ADR-0010: E2E Testing with Playwright (`docs/adr/0010-e2e-testing-playwright.md`)
 
 ---
 

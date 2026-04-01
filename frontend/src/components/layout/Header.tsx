@@ -27,14 +27,14 @@ export function Header() {
   ]
 
   return (
-    <header className="border-b border-gray-200 bg-white">
+    <header className="border-b border-gray-200 bg-white" data-testid="header">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-        <Link href="/" className="text-xl font-bold text-blue-600">
+        <Link href="/" className="text-xl font-bold text-blue-600" data-testid="header-logo">
           Dude Course
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden items-center gap-6 md:flex" aria-label="Navegação principal">
+        <nav className="hidden items-center gap-6 md:flex" aria-label="Navegação principal" data-testid="header-nav">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -53,10 +53,11 @@ export function Header() {
         <div className="hidden items-center gap-4 md:flex">
           {isAuthenticated ? (
             <>
-              <span className="text-sm text-gray-600">{user?.name}</span>
+              <span className="text-sm text-gray-600" data-testid="header-user-name">{user?.name}</span>
               <button
                 onClick={logout}
                 className="text-sm font-medium text-gray-700 transition-colors hover:text-red-600"
+                data-testid="header-logout-button"
               >
                 Sair
               </button>
@@ -66,12 +67,14 @@ export function Header() {
               <Link
                 href="/login"
                 className="text-sm font-medium text-gray-700 transition-colors hover:text-blue-600"
+                data-testid="header-login-link"
               >
                 Entrar
               </Link>
               <Link
                 href="/register"
                 className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                data-testid="header-register-link"
               >
                 Criar conta
               </Link>
@@ -85,6 +88,7 @@ export function Header() {
           className="md:hidden"
           aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
           aria-expanded={menuOpen}
+          data-testid="header-mobile-menu-button"
         >
           <svg className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             {menuOpen ? (

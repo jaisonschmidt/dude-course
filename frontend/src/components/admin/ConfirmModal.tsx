@@ -24,12 +24,12 @@ export function ConfirmModal({
 }: ConfirmModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
-      <p className="mb-6 text-sm text-gray-600">{message}</p>
+      <p className="mb-6 text-sm text-gray-600" data-testid="confirm-modal-message">{message}</p>
       <div className="flex justify-end gap-3">
-        <Button variant="secondary" onClick={onClose} disabled={loading}>
+        <Button variant="secondary" onClick={onClose} disabled={loading} data-testid="confirm-modal-cancel">
           Cancelar
         </Button>
-        <Button variant="danger" onClick={onConfirm} loading={loading}>
+        <Button variant="danger" onClick={onConfirm} loading={loading} data-testid="confirm-modal-confirm">
           {confirmLabel}
         </Button>
       </div>
