@@ -9,8 +9,10 @@ function createMockCourseRepository(): ICourseRepository {
   return {
     create: vi.fn(),
     findById: vi.fn(),
+    findAll: vi.fn(),
     findByStatus: vi.fn(),
     findPublished: vi.fn(),
+    countAll: vi.fn(),
     countByStatus: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
@@ -175,6 +177,50 @@ describe('AdminCourseService', () => {
 
       await expect(service.delete(999)).rejects.toThrow(NotFoundError)
       await expect(service.delete(999)).rejects.toThrow('Course not found')
+    })
+  })
+
+  // ────────────────────────────────────────
+  // listAll
+  // ────────────────────────────────────────
+  describe('listAll', () => {
+    it('should return paginated results with courses and meta', async () => {
+      const courses = [
+        {
+          id: 1,
+          title: 'Course 1',
+          description: 'Description 1',
+          thumbnailUrl: null,
+          status: 'draft' as const,
+          createdAt: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-01'),
+        },
+        {
+          id: 2,
+          title: 'Course 2',
+          description: 'Description 2',
+          thumbnailUrl: null,
+          status: 'draft' as const,
+          createdAt: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-01'),
+        },
+      ]
+
+      vi.mocked(mockCourseRepo.findAll).mockResolvedValue(courses)
+      vi.mocked(mockCourseRepo.countAll).mockResolvedValue(2)
+
+      const result = await service.listAll(1, 20)
+
+      expect(result.data).toEqual(courses)
+      expect(result.data).toHaveLength(2)
+      expect(result.meta).toEqual({
+        page: 1,
+        pageSize: 20,
+        totalItems: 2,
+        totalPages: 1,
+      })
+      expect(mockCourseRepo.findAll).toHaveBeenCalledWith(1, 20)
+      expect(mockCourseRepo.countAll).toHaveBeenCalledOnce()
     })
   })
 })

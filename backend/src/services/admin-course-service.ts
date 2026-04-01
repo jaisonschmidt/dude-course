@@ -21,6 +21,26 @@ export class AdminCourseService {
     private readonly lessonRepository: ILessonRepository,
   ) {}
 
+  async listAll(
+    page: number,
+    pageSize: number,
+  ): Promise<{
+    data: Course[]
+    meta: { page: number; pageSize: number; totalItems: number; totalPages: number }
+  }> {
+    const [courses, totalItems] = await Promise.all([
+      this.courseRepository.findAll(page, pageSize),
+      this.courseRepository.countAll(),
+    ])
+
+    const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize)
+
+    return {
+      data: courses,
+      meta: { page, pageSize, totalItems, totalPages },
+    }
+  }
+
   async create(data: CreateCourseInput): Promise<Course> {
     const courseData: CreateCourseData = {
       title: data.title,

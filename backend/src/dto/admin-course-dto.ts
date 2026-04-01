@@ -8,6 +8,15 @@ export const AdminCourseIdParamSchema = z.object({
 
 export type AdminCourseIdParamDto = z.infer<typeof AdminCourseIdParamSchema>
 
+// ── Query Params ──────────────────────────────────────────────
+
+export const AdminListCoursesQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+})
+
+export type AdminListCoursesQueryDto = z.infer<typeof AdminListCoursesQuerySchema>
+
 // ── Request Bodies ────────────────────────────────────────────
 
 export const CreateCourseBodySchema = z.object({

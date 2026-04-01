@@ -58,7 +58,7 @@ export async function apiRequest<T = unknown>(
   const { body, headers: optionHeaders, ...restOptions } = options
 
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    ...(body !== undefined && { 'Content-Type': 'application/json' }),
     ...(optionHeaders as Record<string, string>),
   }
 

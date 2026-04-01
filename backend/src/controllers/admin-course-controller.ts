@@ -2,6 +2,7 @@ import type { FastifyRequest, FastifyReply } from 'fastify'
 import type { AdminCourseService } from '../services/admin-course-service.js'
 import {
   AdminCourseIdParamSchema,
+  AdminListCoursesQuerySchema,
   CreateCourseBodySchema,
   UpdateCourseBodySchema,
 } from '../dto/admin-course-dto.js'
@@ -10,6 +11,21 @@ import { logger } from '../utils/logger.js'
 
 export class AdminCourseController {
   constructor(private readonly adminCourseService: AdminCourseService) {}
+
+  async list(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+    const query = AdminListCoursesQuerySchema.parse(request.query)
+
+    const result = await this.adminCourseService.listAll(query.page, query.pageSize)
+
+    const data = result.data.map((course) => this.formatCourse(course))
+
+    logger.info(
+      { requestId: request.id, page: query.page, pageSize: query.pageSize },
+      'admin.courses.listed',
+    )
+
+    return reply.status(200).send({ data, meta: result.meta, requestId: request.id })
+  }
 
   async create(request: FastifyRequest, reply: FastifyReply): Promise<void> {
     const body = CreateCourseBodySchema.parse(request.body)
