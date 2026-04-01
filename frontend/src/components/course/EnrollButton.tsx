@@ -22,14 +22,14 @@ export function EnrollButton({ isEnrolled, onEnroll }: EnrollButtonProps) {
 
   if (isEnrolled) {
     return (
-      <Button variant="secondary" disabled>
+      <Button variant="secondary" disabled data-testid="enroll-button-enrolled">
         ✓ Matriculado
       </Button>
     )
   }
 
   return (
-    <Button onClick={handleClick} loading={loading}>
+    <Button onClick={handleClick} loading={loading} data-testid="enroll-button">
       Iniciar Curso
     </Button>
   )

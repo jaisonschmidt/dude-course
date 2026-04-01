@@ -18,7 +18,7 @@ export function CertificateCard({
   issuedAt,
 }: CertificateCardProps) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm" data-testid={`certificate-card-${certificateCode}`}>
       <div className="flex items-start justify-between">
         <div>
           <h4 className="font-semibold text-gray-900">{courseName}</h4>
@@ -32,7 +32,7 @@ export function CertificateCard({
       </div>
       <div className="mt-3 rounded bg-gray-50 p-2">
         <p className="text-xs text-gray-500">Código</p>
-        <p className="font-mono text-sm text-gray-700">{certificateCode}</p>
+        <p className="font-mono text-sm text-gray-700" data-testid="certificate-card-code">{certificateCode}</p>
       </div>
     </div>
   )

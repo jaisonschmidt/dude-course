@@ -86,7 +86,17 @@ ADRs registram decisões arquiteturais significativas do projeto. Cada ADR é um
 ### Pirâmide recomendada
 - **Unit tests (principal foco):** domain + application
 - **Integration tests:** repositories + API endpoints críticos
-- **E2E (mínimo viável):** fluxo feliz principal
+- **E2E (Playwright):** fluxos críticos do usuário (happy paths)
+
+### E2E (Playwright)
+- **Framework**: Playwright, pacote `e2e/` no monorepo
+- **Padrão**: Page Object Model (POM) — 1 classe por página
+- **Seletores**: `data-testid` exclusivamente. Convenção: `<componente>-<elemento>` (ex: `login-email-input`)
+- **Fixtures**: páginas autenticadas (learner, admin) via `fixtures/auth.fixture.ts`
+- **Seed**: via API admin HTTP (não acesso direto ao DB)
+- **Quando usar E2E**: fluxos que cruzam frontend + backend + DB (jornada do aluno, ciclo admin, auth protection)
+- **Quando NÃO usar E2E**: validação de lógica de negócio isolada (usar unit test), queries de repositório (usar integration test)
+- **Decisão**: ADR-0010
 
 ### Regras
 - Cada Use Case deve ter testes de:
@@ -145,6 +155,7 @@ O projeto usa **5 workflows independentes** no GitHub Actions, segmentados por p
 | Deploy Database | `deploy-database.yml` | `database/prisma/migrations/**`, `database/prisma/schema.prisma` | `prisma migrate deploy` → HML → prod |
 | Deploy Backend | `deploy-backend.yml` | `backend/**`, `database/**` | `db:generate` + deploy da API → HML → prod |
 | Deploy Frontend | `deploy-frontend.yml` | `frontend/**` | Build e deploy do Next.js → HML → prod |
+| CI E2E | `ci-e2e.yml` | `e2e/**`, `frontend/**`, `backend/**`, `database/**` | MySQL efêmero, seed, Playwright E2E tests |
 
 **Fallback (aciona todos os workflows):** alterações em `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `docker-compose.yml` ou `.github/workflows/**` acionam todos os jobs.
 

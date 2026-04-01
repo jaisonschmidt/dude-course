@@ -1,6 +1,6 @@
 ---
 description: "Use when writing or modifying tests. Covers testing pyramid, AAA pattern, mocking strategy, Vitest conventions, and naming."
-applyTo: "**/test/**,**/integration-tests/**"
+applyTo: "**/test/**,**/integration-tests/**,**/e2e/**"
 ---
 
 # Testing Guidelines (Vitest)
@@ -10,7 +10,7 @@ applyTo: "**/test/**,**/integration-tests/**"
 Priority order (most → least volume):
 1. **Unit tests** — services, models (`backend/test/unit/`)
 2. **Integration tests** — API routes, repositories with real DB (`integration-tests/test/`)
-3. **E2E tests** — critical happy paths only (future: Playwright)
+3. **E2E tests** — critical happy paths only (Playwright — `e2e/tests/`)
 
 ## Unit tests
 
@@ -112,3 +112,45 @@ await prisma.$executeRaw`TRUNCATE TABLE lessons`       // connection B — FK_CH
 - The backend process and the test seed functions **must connect to the same database**
 - Tests insert data via Prisma into `dude_course_test`; the API must also read from `dude_course_test`
 - If the backend points to `dude_course` while seeds go to `dude_course_test`, all data-dependent tests will fail with empty results
+
+## E2E tests (Playwright)
+
+- **Location**: `e2e/tests/`
+- **Framework**: Playwright
+- **Pattern**: Page Object Model (POM)
+- **Selectors**: `data-testid` attributes only — never CSS classes or text content
+
+### Page Objects
+- Location: `e2e/pages/`
+- 1 class per page
+- Encapsulate locators (`getByTestId`) and actions (e.g., `login(email, password)`)
+- Export from `e2e/pages/index.ts`
+
+### Fixtures
+- Location: `e2e/fixtures/`
+- `auth.fixture.ts` — provides `authenticatedLearnerPage`, `authenticatedAdminPage`, `adminToken`, `learnerCredentials`
+
+### Seed helpers
+- Location: `e2e/helpers/`
+- `seed.ts` — create test data via admin API (courses, lessons, learners)
+- `api.ts` — low-level HTTP helper (POST, GET, PATCH, PUT, DELETE)
+- **Never access database directly** from E2E tests
+
+### Test structure
+- `test.describe.serial` for journey tests (shared state)
+- `beforeAll` for seed data (1x per describe)
+- 1 acceptance criterion = 1 test
+- Focus on critical happy paths
+
+### data-testid naming convention
+- Format: `<component>-<element>` (e.g., `login-email-input`)
+- Dynamic IDs: `<component>-<element>-{id}` (e.g., `course-card-1`, `admin-course-delete-5`)
+- Must be unique within the page context
+
+### When to write E2E tests
+- ✅ Flows crossing frontend → backend → database
+- ✅ Auth protection (redirect, role check)
+- ✅ Idempotency observable from UI
+- ❌ Business logic validation (use unit tests)
+- ❌ Repository queries (use integration tests)
+- ❌ Visual styling (not in scope)

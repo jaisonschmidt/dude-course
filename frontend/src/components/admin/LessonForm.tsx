@@ -54,12 +54,13 @@ export function LessonForm({
   })
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" data-testid="lesson-form">
       <Input
         label="Título"
         {...register('title')}
         error={errors.title?.message}
         disabled={isLoading}
+        data-testid="lesson-form-title"
       />
       <div className="flex flex-col gap-1">
         <label htmlFor="lesson-description" className="text-sm font-medium text-gray-700">
@@ -70,6 +71,7 @@ export function LessonForm({
           rows={3}
           className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none transition-colors focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
           disabled={isLoading}
+          data-testid="lesson-form-description"
           {...register('description')}
         />
       </div>
@@ -79,6 +81,7 @@ export function LessonForm({
         error={errors.youtubeUrl?.message}
         disabled={isLoading}
         placeholder="https://www.youtube.com/watch?v=..."
+        data-testid="lesson-form-youtube-url"
       />
       <Input
         label="Posição"
@@ -86,14 +89,15 @@ export function LessonForm({
         {...register('position', { valueAsNumber: true })}
         error={errors.position?.message}
         disabled={isLoading}
+        data-testid="lesson-form-position"
       />
       <div className="flex justify-end gap-3">
         {onCancel && (
-          <Button variant="secondary" onClick={onCancel} disabled={isLoading}>
+          <Button variant="secondary" onClick={onCancel} disabled={isLoading} data-testid="lesson-form-cancel">
             Cancelar
           </Button>
         )}
-        <Button type="submit" loading={isLoading}>
+        <Button type="submit" loading={isLoading} data-testid="lesson-form-submit">
           {initialData ? 'Salvar' : 'Adicionar Aula'}
         </Button>
       </div>

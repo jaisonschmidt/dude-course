@@ -17,6 +17,9 @@
     "test": "pnpm -r --if-present test",
     "lint": "pnpm -r --if-present lint",
     "format": "pnpm -r --if-present format",
+    "e2e": "pnpm --filter e2e test",
+    "e2e:ui": "pnpm --filter e2e test:ui",
+    "e2e:headed": "pnpm --filter e2e test:headed",
     "validate": "pnpm lint && pnpm --filter backend test",
     "prepare": "husky"
   },

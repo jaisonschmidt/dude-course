@@ -18,14 +18,14 @@ export function LessonList({
 
   if (sorted.length === 0) {
     return (
-      <p className="py-4 text-center text-sm text-gray-500">
+      <p className="py-4 text-center text-sm text-gray-500" data-testid="lesson-list-empty">
         Este curso ainda não possui aulas.
       </p>
     )
   }
 
   return (
-    <div className="flex flex-col divide-y divide-gray-100">
+    <div className="flex flex-col divide-y divide-gray-100" data-testid="lesson-list">
       {sorted.map((lesson) => (
         <LessonItem
           key={lesson.id}

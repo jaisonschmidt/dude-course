@@ -15,6 +15,7 @@ export function CourseCard({ course }: CourseCardProps) {
     <Link
       href={`/courses/${course.id}`}
       className="group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md"
+      data-testid={`course-card-${course.id}`}
     >
       <div className="relative aspect-video w-full overflow-hidden bg-gray-100">
         <Image

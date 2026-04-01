@@ -18,7 +18,7 @@ Referências:
 
 ## 📦 Estrutura do repositório (top-level)
 
-O projeto é um **monorepo pnpm workspaces** com 4 pacotes:
+O projeto é um **monorepo pnpm workspaces** com 5 pacotes:
 
 ```
 dude-course/
@@ -70,6 +70,13 @@ dude-course/
   integration-tests/          # Pacote: testes de integração
     package.json
     test/
+    helpers/
+
+  e2e/                        # Pacote: testes E2E (Playwright)
+    package.json
+    tests/
+    pages/
+    fixtures/
     helpers/
 ```
 
@@ -247,6 +254,45 @@ integration-tests/
 - Testes de API sobem o servidor Fastify e fazem requests HTTP reais.
 - Setup e teardown garantem isolamento entre testes.
 - `fileParallelism: false` — arquivos executam sequencialmente para evitar race conditions no DB.
+
+---
+
+## 🧪 E2E Tests (Playwright)
+
+```
+e2e/
+  package.json
+  tsconfig.json
+  playwright.config.ts        # Playwright config (baseURL, webServer, projects)
+  .gitignore                  # test-results, playwright-report
+  README.md                   # setup, conventions, how to run
+  fixtures/
+    auth.fixture.ts           # authenticated page fixtures (learner, admin)
+  helpers/
+    api.ts                    # HTTP helper for direct API calls
+    seed.ts                   # seed test data via admin API
+  pages/                      # Page Object Model (POM)
+    login.page.ts
+    register.page.ts
+    course-catalog.page.ts
+    course-detail.page.ts
+    lesson-player.page.ts
+    dashboard.page.ts
+    admin-courses.page.ts
+    admin-course-form.page.ts
+    admin-lessons.page.ts
+    index.ts
+  tests/                      # test specs
+    smoke.spec.ts             # infrastructure smoke test
+```
+
+### Rules
+- **Page Object Model**: 1 class per page, encapsulates locators and actions.
+- **Selectors**: `data-testid` only. Convention: `<component>-<element>` (e.g., `login-email-input`).
+- **Fixtures**: Playwright fixtures for authenticated pages (learner, admin).
+- **Seed**: via HTTP API calls to admin endpoints. Admin user from `database/src/seed.ts`.
+- **No app imports**: `e2e/` is an isolated workspace, interacts only via HTTP and browser.
+- **Serial execution**: `workers: 1`, `test.describe.serial` for journey tests.
 
 ---
 

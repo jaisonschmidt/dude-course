@@ -24,17 +24,19 @@ export function Pagination({
     <nav
       className={cn('flex items-center justify-center gap-2', className)}
       aria-label="Paginação"
+      data-testid="pagination"
     >
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={!hasPrev}
         className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
         aria-label="Página anterior"
+        data-testid="pagination-prev"
       >
         ← Anterior
       </button>
 
-      <span className="px-3 py-2 text-sm text-gray-600">
+      <span className="px-3 py-2 text-sm text-gray-600" data-testid="pagination-info">
         Página {currentPage} de {totalPages}
       </span>
 
@@ -43,6 +45,7 @@ export function Pagination({
         disabled={!hasNext}
         className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
         aria-label="Próxima página"
+        data-testid="pagination-next"
       >
         Próxima →
       </button>

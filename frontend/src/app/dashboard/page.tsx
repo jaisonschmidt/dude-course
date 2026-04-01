@@ -76,7 +76,7 @@ function DashboardContent() {
       />
 
       {/* Em Progresso */}
-      <section className="mt-8">
+      <section className="mt-8" data-testid="dashboard-in-progress">
         <h2 className="mb-4 text-xl font-semibold text-gray-800">Em Progresso</h2>
         {dashboard.inProgress.length === 0 ? (
           <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center">
@@ -104,7 +104,7 @@ function DashboardContent() {
       </section>
 
       {/* Concluídos */}
-      <section className="mt-8">
+      <section className="mt-8" data-testid="dashboard-completed">
         <h2 className="mb-4 text-xl font-semibold text-gray-800">Concluídos</h2>
         {dashboard.completed.length === 0 ? (
           <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center">
@@ -129,7 +129,7 @@ function DashboardContent() {
                   </p>
                 </div>
                 {hasCertificateFor(course.courseId) ? (
-                  <span className="rounded bg-green-100 px-3 py-1 text-sm font-medium text-green-700">
+                  <span className="rounded bg-green-100 px-3 py-1 text-sm font-medium text-green-700" data-testid={`certificate-issued-${course.courseId}`}>
                     ✓ Certificado Emitido
                   </span>
                 ) : (
@@ -137,6 +137,7 @@ function DashboardContent() {
                     onClick={() => handleGenerateCertificate(course.courseId, course.title)}
                     disabled={generatingCertFor === course.courseId}
                     className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+                    data-testid={`generate-certificate-${course.courseId}`}
                   >
                     {generatingCertFor === course.courseId ? 'Gerando...' : 'Gerar Certificado'}
                   </button>
@@ -148,7 +149,7 @@ function DashboardContent() {
       </section>
 
       {/* Certificados */}
-      <section className="mt-8">
+      <section className="mt-8" data-testid="dashboard-certificates">
         <h2 className="mb-4 text-xl font-semibold text-gray-800">Certificados</h2>
         {dashboard.certificates.length === 0 ? (
           <div className="rounded-lg border border-dashed border-gray-300 p-8 text-center">

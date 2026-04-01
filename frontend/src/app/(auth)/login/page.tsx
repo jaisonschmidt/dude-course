@@ -37,7 +37,7 @@ export default function LoginPage() {
         <h1 className="mb-6 text-2xl font-bold">Entrar</h1>
 
         {successMessage && (
-          <div className="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-700" role="status">
+          <div className="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-700" role="status" data-testid="login-success-message">
             {successMessage}
           </div>
         )}
