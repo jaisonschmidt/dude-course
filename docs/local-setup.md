@@ -267,7 +267,10 @@ pnpm --filter e2e exec playwright install --with-deps chromium
 pnpm e2e                # rodar todos (headless)
 pnpm e2e:ui             # modo UI interativo do Playwright
 pnpm e2e:headed         # rodar com browser visível
+pnpm e2e:debug          # modo debug (Playwright Inspector)
 ```
+
+> Para sobrescrever as variáveis padrão, crie `e2e/.env` com os valores desejados. Consulte [`e2e/README.md`](../e2e/README.md#environment-variables) para detalhes.
 
 ### Todos os testes do monorepo
 
